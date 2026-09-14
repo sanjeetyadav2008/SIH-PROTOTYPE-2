@@ -1,0 +1,3604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>VaniSetu.ai — Mother Tongue Bridge for Jharkhand | SIH 2026</title>
+<meta name="description" content="Mother Tongue Bridge for Jharkhand — Santhali, Ho, Mundari + Hindi. Offline-first MTB-MLE tool for SIH 2026.">
+<meta name="theme-color" content="#f4762c">
+<link rel="manifest" href="data:application/manifest+json,{"name":"VaniSetu.ai","short_name":"VaniSetu","start_url":".","display":"standalone","background_color":"#14110e","theme_color":"#f4762c","description":"Mother Tongue Bridge for Jharkhand tribal languages"}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root, html[data-theme="dark"] {
+  --bg: #14110e;
+  --card: #1e1a16;
+  --ink: #f2ede6;
+  --muted: #a39a8f;
+  --accent: #f4762c;
+  --accent2: #fb923c;
+  --green: #4ade80;
+  --line: #33291f;
+  --sidebar: #17130f;
+  --sat: #2dd4bf;
+  --ho: #60a5fa;
+  --mun: #a78bfa;
+  --surface: #211c17;
+  --surface2: #2b1c10;
+  --surface3: #2a2420;
+  --pill-bg: #2b1c10;
+  --pill-border: #7c3f12;
+  --nav-num-bg: #33291f;
+  --input-bg: #1e1a16;
+}
+html[data-theme="light"] {
+  --bg: #f7f3ee;
+  --card: #ffffff;
+  --ink: #1c1612;
+  --muted: #6b5f54;
+  --accent: #e05e1a;
+  --accent2: #f4762c;
+  --green: #16a34a;
+  --line: #e5ddd3;
+  --sidebar: #f0ebe4;
+  --sat: #0d9488;
+  --ho: #2563eb;
+  --mun: #7c3aed;
+  --surface: #f3eee8;
+  --surface2: #fff4eb;
+  --surface3: #efeae4;
+  --pill-bg: #fff4eb;
+  --pill-border: #f0b27a;
+  --nav-num-bg: #e5ddd3;
+  --input-bg: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  transition: background 0.2s, color 0.2s;
+}
+/* HEADER */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--accent);
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #f4762c, #fb923c);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px;
+}
+.top-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted); }
+.pill {
+  background: var(--pill-bg); color: var(--accent);
+  padding: 4px 10px; border-radius: 20px; font-weight: 600;
+  border: 1px solid var(--pill-border);
+}
+.pill.green { background: color-mix(in srgb, var(--green) 15%, var(--card)); color: var(--green); border-color: color-mix(in srgb, var(--green) 40%, var(--line)); }
+
+/* LAYOUT */
+.app {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 60px);
+}
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .mobile-nav { display: flex !important; }
+}
+.sidebar {
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+  padding: 24px 16px;
+}
+.sidebar h3 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 12px; font-weight: 700;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; font-size: 14px; font-weight: 500;
+  color: var(--muted); margin-bottom: 4px;
+  border: none; background: transparent; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--card); color: var(--ink); }
+.nav-item.active {
+  background: var(--card); color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  font-weight: 700;
+}
+.nav-num {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--nav-num-bg); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.nav-item.active .nav-num { background: var(--accent); color: #fff; }
+
+.main { padding: 28px 24px 80px; max-width: 900px; }
+.step-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+h1.page-title {
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 800; letter-spacing: -0.03em;
+  margin-bottom: 8px; line-height: 1.15;
+}
+.subtitle { color: var(--muted); font-size: 15px; margin-bottom: 24px; max-width: 520px; }
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.card + .card { margin-top: 16px; }
+
+textarea, select, input {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  font: inherit; background: var(--input-bg); color: var(--ink); outline: none;
+  caret-color: var(--accent);
+}
+textarea::placeholder, input::placeholder { color: var(--muted); opacity: 0.85; }
+textarea:focus, select:focus, input:focus { border-color: var(--accent); }
+textarea { min-height: 100px; resize: vertical; }
+select option { background: var(--card); color: var(--ink); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 18px; border-radius: 12px; border: none;
+  font: inherit; font-weight: 700; cursor: pointer;
+  transition: transform 0.1s, filter 0.15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost {
+  background: var(--card); color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+.btn-ghost:hover { background: var(--surface); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+/* MULTI LANG OUTPUT */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px; margin-top: 16px;
+}
+.lang-card {
+  border-radius: 14px; padding: 14px;
+  border: 1.5px solid var(--line); background: var(--surface);
+}
+.lang-card .lang-name {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 6px;
+}
+.lang-card .lang-text { font-size: 18px; font-weight: 600; line-height: 1.4; word-break: break-word; }
+.lang-card.sat { border-color: color-mix(in srgb, var(--sat) 45%, var(--line)); background: color-mix(in srgb, var(--sat) 12%, var(--card)); }
+.lang-card.sat .lang-name { color: var(--sat); }
+.lang-card.ho { border-color: color-mix(in srgb, var(--ho) 45%, var(--line)); background: color-mix(in srgb, var(--ho) 12%, var(--card)); }
+.lang-card.ho .lang-name { color: var(--ho); }
+.lang-card.mun { border-color: color-mix(in srgb, var(--mun) 45%, var(--line)); background: color-mix(in srgb, var(--mun) 12%, var(--card)); }
+.lang-card.mun .lang-name { color: var(--mun); }
+.lang-card.hi { border-color: var(--pill-border); background: var(--surface2); }
+.lang-card.hi .lang-name { color: var(--accent); }
+
+.speak-mini {
+  margin-top: 8px; font-size: 12px; padding: 4px 10px;
+  border-radius: 8px; border: 1px solid var(--line);
+  background: var(--card); cursor: pointer; font-weight: 600;
+}
+
+/* FLASH / QUIZ */
+.flash-big {
+  text-align: center; padding: 36px 20px;
+  background: linear-gradient(180deg, var(--card), var(--bg));
+  border-radius: 16px; border: 1.5px solid var(--line);
+}
+.flash-visual { font-size: 56px; margin-bottom: 8px; }
+.flash-hi { font-size: 28px; font-weight: 800; }
+.flash-tr { font-size: 22px; color: var(--sat); font-weight: 700; margin-top: 6px; }
+.flash-roman { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+.quiz-opts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;
+}
+@media (max-width: 500px) { .quiz-opts { grid-template-columns: 1fr; } }
+.quiz-opt {
+  padding: 14px; border-radius: 12px; border: 1.5px solid var(--line);
+  background: var(--card); text-align: left; font-weight: 600; cursor: pointer;
+}
+.quiz-opt:hover { border-color: var(--accent); background: var(--surface2); }
+
+.progress-track {
+  height: 8px; background: var(--nav-num-bg); border-radius: 99px; overflow: hidden; margin-top: 10px;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), #fb923c);
+  border-radius: 99px; transition: width 0.3s;
+}
+
+/* DASHBOARD */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;
+}
+.stat {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 14px;
+  padding: 16px; text-align: center;
+}
+.stat-val { font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* MOBILE NAV */
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--card); border-top: 1px solid var(--line);
+  padding: 8px 6px; gap: 4px; z-index: 40;
+  justify-content: space-around;
+}
+.mobile-nav button {
+  flex: 1; border: none; background: transparent;
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  padding: 6px 2px; border-radius: 8px;
+}
+.mobile-nav button.active { color: var(--accent); background: var(--surface2); }
+.mobile-nav .ico { font-size: 18px; display: block; }
+
+.toast {
+  position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+  background: var(--surface3); color: var(--ink); padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px; font-size: 13px; font-weight: 600;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 100;
+  max-width: 90%; text-align: center;
+}
+.toast.show { opacity: 1; }
+
+.hidden { display: none !important; }
+.problem-note {
+  background: var(--surface2); border-left: 4px solid var(--accent);
+  padding: 12px 14px; border-radius: 0 12px 12px 0;
+  font-size: 13px; margin-bottom: 20px; color: var(--accent2);
+}
+.assist-out {
+  white-space: pre-wrap; font-size: 14px; line-height: 1.6;
+  background: var(--surface); border-radius: 12px; padding: 16px;
+  border: 1px solid var(--line); min-height: 120px; margin-top: 12px;
+  color: var(--ink);
+}
+.preset-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.preset {
+  font-size: 12px; padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--line); background: var(--card); cursor: pointer; font-weight: 600;
+}
+.preset.chart-lang-btn.active, .preset.flash-lang-btn.active,
+.preset.src-lang-btn.active, .preset.voice-profile-btn.active,
+.preset.kb-lang-btn.active, .preset.pdf-lang-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.preset:hover { border-color: var(--accent); color: var(--accent); }
+.chart-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;
+}
+.chart-item {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 14px;
+  padding: 16px; text-align: center;
+}
+.chart-item .num { font-size: 32px; }
+.chart-item .hi { font-weight: 800; font-size: 16px; margin-top: 4px; }
+.chart-item .tr { color: var(--sat); font-weight: 700; font-size: 15px; margin-top: 4px; }
+.chart-item .ro { font-size: 12px; color: var(--muted); }
+
+/* KIDS ZONE */
+.kz-locked {
+  text-align: center; padding: 40px 20px; background: var(--card);
+  border: 1.5px dashed var(--line); border-radius: 16px; color: var(--muted);
+}
+.kz-timer {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface3); color: var(--ink); padding: 10px 16px; border-radius: 12px;
+  font-weight: 700; font-size: 14px; margin-bottom: 14px; border: 1px solid var(--line);
+}
+.kz-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+@media (max-width: 500px) { .kz-grid { grid-template-columns: repeat(3, 1fr); } }
+.kz-card {
+  aspect-ratio: 1; background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; cursor: pointer; color: #fff; user-select: none;
+  transition: transform 0.15s;
+}
+.kz-card.flipped, .kz-card.matched { background: var(--card); color: var(--ink); border: 1.5px solid var(--line); }
+.kz-card.matched { opacity: 0.55; cursor: default; }
+.kz-card:active { transform: scale(0.95); }
+.kz-stats { display:flex; gap:16px; font-size:13px; color:var(--muted); margin-top:12px; }
+.kz-strict-note {
+  background: #12233a; border-left: 4px solid #60a5fa; padding: 12px 14px;
+  border-radius: 0 12px 12px 0; font-size: 13px; margin-bottom: 16px; color: #93c5fd;
+}
+
+/* ---- LOGIN / LANGUAGE GATE ---- */
+.login-screen {
+  position: fixed; inset: 0; background: linear-gradient(160deg,var(--bg),var(--sidebar));
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+}
+.login-card {
+  background: var(--card); border-radius: 20px; border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08); padding: 28px 26px;
+  width: 100%; max-width: 380px;
+}
+.login-label { display:block; font-size:12px; font-weight:700; color:var(--muted); margin: 12px 0 6px; }
+.lang-choice-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 14px 16px; border-radius: 14px;
+  border: 1.5px solid var(--line); background: var(--surface); cursor: pointer;
+  font: inherit; font-weight: 700; font-size: 15px; color: var(--ink);
+}
+.lang-choice-btn .lc-sub { font-size: 11px; font-weight: 500; color: var(--muted); }
+.lang-choice-btn.selected {
+  border-color: var(--accent); background: var(--surface2); color: var(--accent2);
+  box-shadow: 0 0 0 2px var(--pill-border) inset;
+}
+.lang-choice-btn .lc-check { font-size: 16px; opacity: 0; }
+.lang-choice-btn.selected .lc-check { opacity: 1; }
+
+/* ---- OUTPUT MODE ---- */
+.mode-row { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.mode-btn {
+  flex: 1; min-width: 90px; padding: 10px 12px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--card); cursor: pointer;
+  font: inherit; font-weight: 700; font-size: 13px; color: var(--muted);
+  text-align: center;
+}
+.mode-btn.active { border-color: var(--accent); background: var(--surface2); color: var(--accent2); }
+.voice-out-card, .visual-out-card {
+  text-align: center; padding: 30px 18px; background: linear-gradient(180deg,var(--card),var(--bg));
+  border-radius: 16px; border: 1.5px solid var(--line); margin-top: 16px;
+}
+.voice-out-card .vo-icon { font-size: 48px; margin-bottom: 10px; }
+.visual-out-card .vi-icon { font-size: 72px; margin-bottom: 10px; }
+.visual-out-card .vi-word { font-size: 24px; font-weight: 800; margin-top: 6px; }
+.visual-out-card .vi-hi { font-size: 15px; color: var(--muted); margin-top: 4px; }
+
+/* ---- STUDENT SECTION ---- */
+.ss-block { margin-bottom: 18px; }
+.ss-block h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
+.file-drop {
+  border: 1.5px dashed var(--line); border-radius: 14px; padding: 20px;
+  text-align: center; background: var(--surface); font-size: 13px; color: var(--muted);
+}
+.file-drop input[type=file] { margin-top: 10px; }
+
+/* ---- DOUBT SOLVER CHAT ---- */
+.doubt-wrap { display: flex; flex-direction: column; gap: 12px; }
+.doubt-thread {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px; min-height: 220px; max-height: 420px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.doubt-msg {
+  max-width: 92%; padding: 10px 12px; border-radius: 14px;
+  font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+}
+.doubt-msg.bot {
+  align-self: flex-start; background: var(--surface3); border: 1px solid var(--line); color: var(--ink);
+}
+.doubt-msg.user {
+  align-self: flex-end; background: var(--surface2); border: 1px solid var(--pill-border); color: var(--accent2);
+}
+.doubt-msg .who {
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.doubt-msg.bot .who { color: var(--accent2); }
+.doubt-thinking { opacity: .75; font-style: italic; }
+.doubt-suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.doubt-suggest button {
+  font-size: 11px; padding: 5px 10px; border-radius: 16px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink); font-weight: 600;
+}
+.doubt-suggest button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---- SPLASH / ENTRY ANIMATION ---- */
+.splash {
+  position: fixed; inset: 0; z-index: 300;
+  background: linear-gradient(160deg, #0f0c0a 0%, #1a1510 50%, #14110e 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.7s ease, visibility 0.7s;
+}
+.splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-logo {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: linear-gradient(135deg, #f4762c, #fb923c);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; color: #fff;
+  box-shadow: 0 12px 40px rgba(244,118,44,0.35);
+  animation: splashPop 0.9s cubic-bezier(0.22,1,0.36,1) both;
+}
+.splash-title {
+  margin-top: 22px; font-size: 32px; font-weight: 800; letter-spacing: -0.03em;
+  color: #f2ede6; animation: splashFade 0.8s 0.25s both;
+}
+.splash-tag {
+  margin-top: 8px; font-size: 14px; color: #a39a8f; font-weight: 500;
+  animation: splashFade 0.8s 0.4s both;
+}
+.splash-bar {
+  margin-top: 28px; width: 120px; height: 3px; border-radius: 99px;
+  background: #33291f; overflow: hidden; animation: splashFade 0.6s 0.5s both;
+}
+.splash-bar-fill {
+  height: 100%; width: 0; background: linear-gradient(90deg, #f4762c, #fb923c);
+  border-radius: 99px; animation: splashLoad 1.4s 0.6s ease-out forwards;
+}
+@keyframes splashPop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes splashFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes splashLoad {
+  to { width: 100%; }
+}
+</style>
+<script>
+(function(){
+  var t = localStorage.getItem("vs_theme") || "dark";
+  document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+</head>
+<body>
+
+<!-- SPLASH / ENTRY ANIMATION -->
+<div class="splash" id="splashScreen">
+  <div class="splash-logo">🌉</div>
+  <div class="splash-title">VaniSetu.ai</div>
+  <div class="splash-tag">Mother Tongue Bridge · Jharkhand · SIH 2026</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- LOGIN GATE -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="logo-mark" style="width:56px;height:56px;font-size:26px;margin:0 auto 14px">🌉</div>
+    <h1 style="text-align:center;font-size:22px;font-weight:800;margin-bottom:4px">VaniSetu.ai</h1>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:6px">Login · SIH 2026 · PS 26042</p>
+    <label class="login-label">Username</label>
+    <input type="text" id="loginUser" placeholder="e.g. teacher01" autocomplete="username">
+    <label class="login-label">Password</label>
+    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-top:16px;justify-content:center">🔐 Login</button>
+    <p id="loginErr" style="color:#fca5a5;font-size:12px;margin-top:10px;text-align:center;min-height:16px"></p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Offline demo login — any username &amp; password (min 3 characters) works.</p>
+  </div>
+</div>
+
+<!-- LANGUAGE GATE -->
+<div class="login-screen hidden" id="langScreen">
+  <div class="login-card" style="max-width:420px">
+    <h1 style="text-align:center;font-size:20px;font-weight:800;margin-bottom:6px">Choose your language</h1>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:16px">हिंदी हमेशा साथ रहेगी। Pick <b>one</b> mother tongue to learn alongside Hindi.</p>
+    <div class="pill green" style="display:block;text-align:center;padding:10px;margin-bottom:14px;font-size:14px">✓ Hindi — compulsory</div>
+    <div id="langChoiceRow" style="display:flex;flex-direction:column;gap:10px">
+      <button class="lang-choice-btn" data-lang="ho">Ho <span class="lc-sub">Kolhan belt</span> <span class="lc-check">✓</span></button>
+      <button class="lang-choice-btn" data-lang="mun">Mundari <span class="lc-sub">Munda belt</span> <span class="lc-check">✓</span></button>
+      <button class="lang-choice-btn" data-lang="sat">Santhali <span class="lc-sub">Ol Chiki script</span> <span class="lc-check">✓</span></button>
+    </div>
+    <button class="btn btn-primary" id="btnLangConfirm" style="width:100%;margin-top:18px;justify-content:center" disabled>Continue →</button>
+  </div>
+</div>
+
+<!-- ROLE GATE -->
+<div class="login-screen hidden" id="roleScreen">
+  <div class="login-card" style="max-width:420px">
+    <h1 style="text-align:center;font-size:20px;font-weight:800;margin-bottom:6px">Who are you?</h1>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:18px">Choose your role. This changes the tools you see.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button class="lang-choice-btn" data-role="teacher" id="roleTeacher">
+        <span>👩‍🏫 Teacher</span>
+        <span class="lc-sub">Lesson plans, worksheets, class progress</span>
+        <span class="lc-check">✓</span>
+      </button>
+      <button class="lang-choice-btn" data-role="student" id="roleStudent">
+        <span>🎒 Student</span>
+        <span class="lc-sub">Learn, quiz, flashcards, doubt solver</span>
+        <span class="lc-check">✓</span>
+      </button>
+    </div>
+    <button class="btn btn-primary" id="btnRoleConfirm" style="width:100%;margin-top:18px;justify-content:center" disabled>Enter VaniSetu →</button>
+  </div>
+</div>
+
+<div class="app-root hidden" id="appRoot">
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">🌉</div>
+    <div>
+      VaniSetu.ai
+      <div style="font-size:11px;font-weight:500;color:var(--muted)">SIH 2026 · PS 26042</div>
+    </div>
+  </div>
+  <div class="top-meta">
+    <span class="pill" id="streakPill">🔥 0 day streak</span>
+    <span class="pill green" data-i18n="offline_ready">Online + Offline</span>
+    <button class="pill" id="themeToggle" style="cursor:pointer;font-weight:800" title="Toggle light / dark theme">🌙 Dark</button>
+    <button class="pill" id="targetLangPill" style="cursor:pointer;font-weight:800" title="Change mother tongue">🌐 Santhali</button>
+    <button class="pill" id="langToggle" style="cursor:pointer;font-weight:800">EN</button>
+    <button class="pill" id="btnLogout" style="cursor:pointer;font-weight:800" title="Logout">👤 <span id="userPillName">Logout</span></button>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="sidebar">
+    <h3 data-i18n="nav_heading">Learning path</h3>
+    <button class="nav-item active" data-step="1"><span class="nav-num">01</span> <span data-i18n="nav_1">Translate all</span></button>
+    <button class="nav-item" data-step="2"><span class="nav-num">02</span> <span data-i18n="nav_2">Visual chart</span></button>
+    <button class="nav-item" data-step="3"><span class="nav-num">03</span> <span data-i18n="nav_3">Flashcards</span></button>
+    <button class="nav-item" data-step="4"><span class="nav-num">04</span> <span data-i18n="nav_4">Daily quiz</span></button>
+    <button class="nav-item" data-step="5"><span class="nav-num">05</span> <span data-i18n="nav_5">Teacher AI</span></button>
+    <button class="nav-item" data-step="6"><span class="nav-num">06</span> <span data-i18n="nav_6">Worksheets</span></button>
+    <button class="nav-item" data-step="7"><span class="nav-num">07</span> <span data-i18n="nav_7">Analytics</span></button>
+    <button class="nav-item" data-step="8"><span class="nav-num">08</span> <span data-i18n="nav_8">Doubt Solver</span></button>
+    <button class="nav-item" data-step="9"><span class="nav-num">09</span> <span data-i18n="nav_9">Kids Zone</span> <span style="font-size:9px;background:#13294d;color:#60a5fa;padding:1px 6px;border-radius:8px;font-weight:800;margin-left:4px" data-i18n="online_badge">ONLINE</span></button>
+    <button class="nav-item" data-step="10"><span class="nav-num">10</span> <span data-i18n="nav_10">Student Section</span></button>
+    <button class="nav-item" data-step="11"><span class="nav-num">11</span> <span>📖 Stories</span></button>
+    <div style="margin-top:24px;padding:12px;background: var(--card);border-radius:12px;font-size:12px;color:var(--muted);border:1px solid var(--line)" data-i18n="sidebar_note">
+      Built for <b>Jharkhand PALASH</b> MTB-MLE — Santhali, Ho & Mundari first.
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- STEP 1: MULTI TRANSLATE -->
+    <section id="step1">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 01</div>
+      <h1 class="page-title" data-i18n="s1_title">One phrase. Every tribal language.</h1>
+      <p class="subtitle" data-i18n="s1_subtitle">Type in any language. Get Santhali, Ho, Mundari & Hindi — ready for the classroom.</p>
+      <div class="problem-note" data-i18n="s1_note">
+        Solves PS 26042: Hindi-trained teachers can deliver mother-tongue instruction without fluency in Ho / Mundari / Santhali.
+      </div>
+      <div class="card">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)">SOURCE LANGUAGE</label>
+        <div class="preset-row" id="srcLangPicker" style="margin-top:8px;margin-bottom:12px">
+          <button class="preset src-lang-btn active" data-lang="hi">हिन्दी</button>
+          <button class="preset src-lang-btn" data-lang="en">English</button>
+          <button class="preset src-lang-btn" data-lang="sat" style="border-color:#2dd4bf;color:#2dd4bf">Santhali</button>
+          <button class="preset src-lang-btn" data-lang="ho" style="border-color:#60a5fa;color:#60a5fa">Ho</button>
+          <button class="preset src-lang-btn" data-lang="mun" style="border-color:#a78bfa;color:#a78bfa">Mundari</button>
+        </div>
+        <label style="font-size:12px;font-weight:700;color:var(--muted)" data-i18n="s1_label">YOUR SENTENCE</label>
+        <textarea id="srcText" style="margin-top:6px">आज हम संख्याएँ सीखेंगे।</textarea>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn btn-ghost" id="btnToggleKb" title="Mother-tongue keyboard">⌨️ Keyboard</button>
+          <button class="btn btn-primary" id="btnTranslate" data-i18n="s1_btn_translate">✨ Translate into every language</button>
+          <button class="btn btn-ghost" id="btnMic" data-i18n="s1_btn_mic">🎤 Speech input</button>
+          <button class="btn btn-ghost" id="btnClear" data-i18n="s1_btn_clear">Clear</button>
+        </div>
+        <!-- Virtual Keyboard -->
+        <div id="kbPanel" class="hidden" style="margin-top:14px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div class="preset-row" style="margin:0">
+              <button class="preset kb-lang-btn active" data-kb="sat">Santhali (Ol Chiki)</button>
+              <button class="preset kb-lang-btn" data-kb="ho">Ho</button>
+              <button class="preset kb-lang-btn" data-kb="mun">Mundari</button>
+            </div>
+            <button class="btn btn-ghost" id="btnKbClose" style="padding:6px 12px;font-size:12px">✕ Close</button>
+          </div>
+          <div id="kbKeys" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-ghost" id="kbSpace" style="flex:1">Space</button>
+            <button class="btn btn-ghost" id="kbBack">⌫</button>
+            <button class="btn btn-ghost" id="kbClear">Clear</button>
+          </div>
+        </div>
+        <div id="statusLine" style="font-size:12px;color:var(--muted);margin-top:10px" data-i18n="s1_status_ready">Ready · Offline dictionary + Online bridge</div>
+      </div>
+
+      <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-top:18px" data-i18n="s1_output_label">OUTPUT — ALL LANGUAGES</label>
+      <div class="mode-row" id="outputModeRow">
+        <button class="mode-btn active" data-mode="text" data-i18n="mode_text">📝 Text</button>
+        <button class="mode-btn" data-mode="voice" data-i18n="mode_voice">🔊 Voice</button>
+        <button class="mode-btn" data-mode="visual" data-i18n="mode_visual">🖼️ Visual</button>
+      </div>
+
+      <!-- Voice controls (always visible when voice mode) -->
+      <div id="voiceControls" class="card hidden" style="margin-top:12px;padding:14px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)">VOICE PROFILE</label>
+        <div class="preset-row" id="voiceProfileRow" style="margin-top:8px">
+          <button class="preset voice-profile-btn active" data-profile="clear">Slow &amp; Clear</button>
+          <button class="preset voice-profile-btn" data-profile="natural">Natural</button>
+          <button class="preset voice-profile-btn" data-profile="child">Child-friendly</button>
+          <button class="preset voice-profile-btn" data-profile="teacher">Teacher</button>
+          <button class="preset voice-profile-btn" data-profile="slowest">Slowest</button>
+        </div>
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-top:12px">SYSTEM VOICE</label>
+        <select id="voiceSelect" style="margin-top:6px;background:var(--input-bg);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></select>
+      </div>
+
+      <!-- TEXT OUTPUT — all three tribal + Hindi -->
+      <div class="lang-grid" id="langOut">
+        <div class="lang-card sat" id="cardSat">
+          <div class="lang-name">Santhali · Ol Chiki</div>
+          <div class="lang-text" id="outSat">—</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px" id="outSatRo"></div>
+          <button class="speak-mini" data-speak="sat" data-i18n="listen_btn">🔊 Listen</button>
+        </div>
+        <div class="lang-card ho" id="cardHo">
+          <div class="lang-name">Ho</div>
+          <div class="lang-text" id="outHo">—</div>
+          <button class="speak-mini" data-speak="ho" data-i18n="listen_btn">🔊 Listen</button>
+        </div>
+        <div class="lang-card mun" id="cardMun">
+          <div class="lang-name">Mundari</div>
+          <div class="lang-text" id="outMun">—</div>
+          <button class="speak-mini" data-speak="mun" data-i18n="listen_btn">🔊 Listen</button>
+        </div>
+        <div class="lang-card hi" id="cardHi">
+          <div class="lang-name"><span data-i18n="lang_hi_name">Hindi (reference)</span></div>
+          <div class="lang-text" id="outHi">—</div>
+          <button class="speak-mini" data-speak="hi" data-i18n="listen_btn">🔊 Listen</button>
+        </div>
+      </div>
+
+      <!-- VOICE OUTPUT -->
+      <div class="voice-out-card hidden" id="voiceOut">
+        <div class="vo-icon">🔊</div>
+        <div style="font-weight:800;font-size:16px" id="voiceOutLabel" data-i18n="s1_voice_playing">Playing in Santhali…</div>
+        <div style="font-size:13px;color:var(--muted);margin:8px 0" id="voiceOutText">—</div>
+        <div class="btn-row" style="justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnReplayVoice" data-i18n="s1_replay">🔁 Replay</button>
+          <button class="btn btn-ghost" data-speak-all="sat">Santhali</button>
+          <button class="btn btn-ghost" data-speak-all="ho">Ho</button>
+          <button class="btn btn-ghost" data-speak-all="mun">Mundari</button>
+          <button class="btn btn-ghost" data-speak-all="hi">Hindi</button>
+        </div>
+      </div>
+
+      <!-- VISUAL OUTPUT -->
+      <div class="visual-out-card hidden" id="visualOut">
+        <div class="vi-icon" id="viIcon">🖼️</div>
+        <div class="vi-word" id="viWord">—</div>
+        <div class="vi-hi" id="viHi">—</div>
+      </div>
+    </section>
+
+    <!-- STEP 2: CHART -->
+    <section id="step2" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 02</div>
+      <h1 class="page-title" data-i18n="s2_title">Visual number & object chart</h1>
+      <p class="subtitle" data-i18n="s2_subtitle">Tap any card to hear the Roman pronunciation. Designed for Class 1–3 FLN.</p>
+      <div class="card" style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)" data-i18n="s2_choose_label">CHOOSE LANGUAGE TO DISPLAY & HEAR</label>
+        <div class="preset-row" id="chartLangPicker" style="margin-top:10px">
+          <button class="preset chart-lang-btn active" data-lang="sat" data-i18n="lang_name_sat">Santhali</button>
+          <button class="preset chart-lang-btn" data-lang="ho" data-i18n="lang_name_ho">Ho</button>
+          <button class="preset chart-lang-btn" data-lang="mun" data-i18n="lang_name_mun">Mundari</button>
+          <button class="preset chart-lang-btn" data-lang="en" data-i18n="lang_name_en" style="border-color:#60a5fa;color:#60a5fa;font-weight:800">English</button>
+        </div>
+      </div>
+      <div class="chart-grid" id="chartGrid"></div>
+    </section>
+
+    <!-- STEP 3: FLASHCARDS -->
+    <section id="step3" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 03</div>
+      <h1 class="page-title" data-i18n="s3_title">Vernacular flashcards</h1>
+      <p class="subtitle" data-i18n="s3_subtitle">Hindi → Santhali / Tamil / English with Roman guide.</p>
+      <div class="card" style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)" data-i18n="s3_choose_label">CHOOSE FLASHCARD LANGUAGE</label>
+        <div class="preset-row" id="flashLangPicker" style="margin-top:10px">
+          <button class="preset flash-lang-btn active" data-lang="sat" data-i18n="lang_name_sat">Santhali</button>
+          <button class="preset flash-lang-btn" data-lang="ho" data-i18n="lang_name_ho">Ho</button>
+          <button class="preset flash-lang-btn" data-lang="mun" data-i18n="lang_name_mun">Mundari</button>
+          <button class="preset flash-lang-btn" data-lang="en" data-i18n="lang_name_en" style="border-color:#60a5fa;color:#60a5fa;font-weight:800">English</button>
+        </div>
+      </div>
+      <div class="flash-big">
+        <div class="flash-visual" id="fVisual">1️⃣</div>
+        <div class="flash-hi" id="fHi">एक</div>
+        <div class="flash-tr" id="fTr">ᱢᱤᱫ · Santhali</div>
+        <div class="flash-roman" id="fRo">mid</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;margin-top:16px">
+        <button class="btn btn-ghost" id="fPrev" data-i18n="s3_btn_prev">← Prev</button>
+        <button class="btn btn-primary" id="fSpeak" data-i18n="s3_btn_hear">🔊 Hear</button>
+        <button class="btn btn-ghost" id="fNext" data-i18n="s3_btn_next">Next →</button>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--muted);text-align:center" id="fProg">1 / 12</div>
+      <div class="progress-track"><div class="progress-fill" id="fBar" style="width:8%"></div></div>
+    </section>
+
+    <!-- STEP 4: QUIZ -->
+    <section id="step4" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 04</div>
+      <h1 class="page-title" data-i18n="s4_title">Daily adaptive quiz</h1>
+      <p class="subtitle" data-i18n="s4_subtitle">Fresh questions every day. Tracks accuracy for the teacher dashboard.</p>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span class="pill" id="qBadge" data-i18n="s4_badge">Daily quiz</span>
+          <span style="font-size:13px;color:var(--muted)" id="qProg">Q 1 of 4</span>
+        </div>
+        <h2 id="qText" style="font-size:18px;margin:12px 0" data-i18n="s4_loading">Loading…</h2>
+        <div class="quiz-opts" id="qOpts"></div>
+        <p id="qFeed" style="text-align:center;font-weight:700;margin-top:14px;min-height:24px"></p>
+        <div class="progress-track"><div class="progress-fill" id="qBar" style="width:0%"></div></div>
+        <div class="btn-row" style="justify-content:center">
+          <button class="btn btn-ghost" id="btnTryAgain" data-i18n="s4_try_again">🔁 Try Again</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: TEACHER AI -->
+    <section id="step5" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 05</div>
+      <h1 class="page-title" data-i18n="s5_title">Teacher AI assistant</h1>
+      <p class="subtitle" data-i18n="s5_subtitle">Get 5-minute mother-tongue activity plans aligned to PALASH / FLN.</p>
+      <div class="preset-row" id="presets"></div>
+      <div class="card">
+        <textarea id="assistIn" data-i18n-placeholder="s5_placeholder" placeholder="e.g. How do I teach counting 1–5 with pebbles in Santhali?"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnAssist" data-i18n="s5_btn">Generate activity plan</button>
+        </div>
+        <div class="assist-out" id="assistOut" data-i18n="s5_out_default">Ask anything about classroom activities in Ho, Mundari or Santhali.</div>
+      </div>
+    </section>
+
+    <!-- STEP 6: WORKSHEETS -->
+    <section id="step6" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 06</div>
+      <h1 class="page-title" data-i18n="s6_title">Printable classroom tools</h1>
+      <p class="subtitle" data-i18n="s6_subtitle">Offline PDF generation — no server needed. Choose language for PDF content.</p>
+      <div class="card" style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)">PDF LANGUAGE / માતૃભાષા</label>
+        <div class="preset-row" id="pdfLangPicker" style="margin-top:10px">
+          <button class="preset pdf-lang-btn active" data-lang="en">English</button>
+          <button class="preset pdf-lang-btn" data-lang="hi">हिन्दी</button>
+          <button class="preset pdf-lang-btn" data-lang="sat">Santhali</button>
+          <button class="preset pdf-lang-btn" data-lang="ho">Ho</button>
+          <button class="preset pdf-lang-btn" data-lang="mun">Mundari</button>
+        </div>
+      </div>
+      <div class="lang-grid">
+        <div class="card" style="text-align:center">
+          <div style="font-size:40px">📝</div>
+          <h3 style="margin:8px 0" data-i18n="s6_card1_title">Matching worksheet</h3>
+          <p style="font-size:13px;color:var(--muted)" data-i18n="s6_card1_desc">Hindi ↔ Ol Chiki / Roman for Class 1–5</p>
+          <button class="btn btn-primary" style="margin-top:12px;width:100%" id="btnSheet" data-i18n="s6_download">Download PDF</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:40px">📋</div>
+          <h3 style="margin:8px 0" data-i18n="s6_card2_title">Daily lesson plan</h3>
+          <p style="font-size:13px;color:var(--muted)" data-i18n="s6_card2_desc">Warm-up + mother-tongue bridge + practice</p>
+          <button class="btn btn-primary" style="margin-top:12px;width:100%" id="btnLesson" data-i18n="s6_download">Download PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 7: ANALYTICS -->
+    <section id="step7" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 07</div>
+      <h1 class="page-title" data-i18n="s7_title">Progress & impact</h1>
+      <p class="subtitle" data-i18n="s7_subtitle">Track attempts, accuracy and streaks — export for school records.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="sAttempts">0</div><div class="stat-lbl" data-i18n="s7_attempts">Attempts</div></div>
+        <div class="stat"><div class="stat-val" id="sAcc">0%</div><div class="stat-lbl" data-i18n="s7_accuracy">Accuracy</div></div>
+        <div class="stat"><div class="stat-val" id="sStreak">0</div><div class="stat-lbl" data-i18n="s7_streak">Streak</div></div>
+        <div class="stat"><div class="stat-val" id="sLevel">Beginner</div><div class="stat-lbl" data-i18n="s7_level">Level</div></div>
+      </div>
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-primary" id="btnReport" data-i18n="s7_btn_report">📥 Export progress report</button>
+        <button class="btn btn-ghost" id="btnReset" data-i18n="s7_btn_reset">Reset progress</button>
+      </div>
+    </section>
+
+    <!-- STEP 8: STUDENT DOUBT SOLVER -->
+    <section id="step8" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 08</div>
+      <h1 class="page-title" data-i18n="s8_title">Doubt Solver — ask anything</h1>
+      <p class="subtitle" data-i18n="s8_subtitle">A real tutor, not a button bank. Ask in Hindi, English or Hinglish — get a clear answer, an example, and a next step.</p>
+      <div class="preset-row" id="studentPresets"></div>
+      <div class="card doubt-wrap">
+        <div class="doubt-thread" id="doubtThread">
+          <div class="doubt-msg bot" id="doubtWelcome">
+            <div class="who">Vani</div>
+            <div data-i18n="s8_out_default">Hey. Ask me the way you'd ask a person — not an app. “How do I say पानी in Santhali?”, “I blanked on the quiz”, “this feels too hard”. I'll answer you straight.</div>
+          </div>
+        </div>
+        <textarea id="studentIn" data-i18n-placeholder="s8_placeholder" placeholder="Ask a real question… e.g. How do I say water in Santhali?"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnStudentAssist" data-i18n="s8_btn">Ask Vani</button>
+          <button class="btn btn-ghost" id="btnStudentSpeak" data-i18n="s8_btn_listen">🔊 Listen to last answer</button>
+          <button class="btn btn-ghost" id="btnStudentClear">Clear chat</button>
+        </div>
+        <div id="studentOut" class="hidden"></div>
+      </div>
+    </section>
+
+    <!-- STEP 9: KIDS ZONE (online only, time-limited) -->
+    <section id="step9" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 09</div>
+      <h1 class="page-title" data-i18n="s9_title">Kids Zone — memory match</h1>
+      <p class="subtitle" data-i18n="s9_subtitle">A short, fun break to practise numbers — needs internet, and locks itself after one round a day.</p>
+      <div class="kz-strict-note" data-i18n="s9_strict_note">
+        ⏱️ One 5-minute play session per day. This keeps the fun area from pulling focus away from the actual lessons.
+      </div>
+      <div id="kzArea"></div>
+    </section>
+
+    <!-- STEP 10: STUDENT SECTION -->
+    <section id="step10" class="hidden">
+      <div class="step-label"><span data-i18n="step_word">STEP</span> 10</div>
+      <h1 class="page-title" data-i18n="s10_title">Student Section</h1>
+      <p class="subtitle" data-i18n="s10_subtitle">AI progress detector + upload class material and get it in your mother tongue.</p>
+
+      <div class="card ss-block">
+        <h3>🔍 <span data-i18n="s10_ai_title">AI Progress Detector</span></h3>
+        <p class="subtitle" style="margin-bottom:10px" data-i18n="s10_ai_desc">Analyses your quiz, flashcard &amp; translation activity and tells you exactly what to practise next.</p>
+        <button class="btn btn-primary" id="btnProgressDetect" data-i18n="s10_ai_btn">Analyse my progress</button>
+        <div class="assist-out" id="progressOut" data-i18n="s10_ai_default">Tap the button — I'll check your attempts, accuracy and streak and suggest what to do next.</div>
+      </div>
+
+      <div class="card ss-block">
+        <h3>📄 <span data-i18n="s10_pdf_title">Upload PDF · Convert to my language</span></h3>
+        <p class="subtitle" style="margin-bottom:10px" data-i18n="s10_pdf_desc">Upload a class handout (PDF). VaniSetu.ai will pull out the text and convert known words into your selected mother tongue.</p>
+        <div class="file-drop">
+          <div data-i18n="s10_pdf_drop">📎 Choose a PDF file from your device</div>
+          <input type="file" id="pdfUpload" accept="application/pdf">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnPdfConvert" data-i18n="s10_pdf_btn">Convert to my language</button>
+          <button class="btn btn-ghost" id="btnPdfDownload" data-i18n="s10_pdf_download" disabled>⬇️ Download converted PDF</button>
+        </div>
+        <div id="pdfStatus" style="font-size:12px;color:var(--muted);margin-top:8px" data-i18n="s10_pdf_ready">No file selected.</div>
+        <div class="assist-out" id="pdfOut" data-i18n="s10_pdf_default">Converted text will appear here — known classroom words are shown in your mother tongue; the rest stays as-is.</div>
+      </div>
+    </section>
+
+    <!-- STEP 11: STORIES -->
+    <section id="step11" class="hidden">
+      <div class="step-label">STEP 11</div>
+      <h1 class="page-title">📖 Mother-tongue Stories</h1>
+      <p class="subtitle">Short Class 1–3 stories. Read in mother tongue first, then Hindi bridge. Tap words to hear them.</p>
+
+      <div class="card" style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted)">CHOOSE STORY</label>
+        <div class="preset-row" id="storyPicker" style="margin-top:10px">
+          <button class="preset story-btn active" data-story="mango">🥭 The Mango</button>
+          <button class="preset story-btn" data-story="water">💧 Water is Life</button>
+          <button class="preset story-btn" data-story="school">🏫 Going to School</button>
+          <button class="preset story-btn" data-story="count">🔢 Counting Friends</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <h3 id="storyTitle" style="font-size:18px;font-weight:800">The Mango</h3>
+          <div class="btn-row" style="margin:0">
+            <button class="btn btn-ghost" id="btnStoryLang" style="padding:8px 12px;font-size:13px">Show Hindi</button>
+            <button class="btn btn-primary" id="btnStorySpeak" style="padding:8px 12px;font-size:13px">🔊 Listen</button>
+          </div>
+        </div>
+        <div id="storyBody" style="font-size:17px;line-height:1.7;white-space:pre-wrap;min-height:120px"></div>
+        <div id="storyHi" class="hidden" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:15px;color:var(--muted);line-height:1.65;white-space:pre-wrap"></div>
+        <div style="margin-top:18px">
+          <h4 style="font-size:14px;font-weight:700;margin-bottom:8px">Quick check</h4>
+          <div id="storyQuiz" class="quiz-opts"></div>
+          <p id="storyFeed" style="text-align:center;font-weight:700;margin-top:10px;min-height:22px"></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<nav class="mobile-nav" style="overflow-x:auto">
+  <button data-step="1" class="active"><span class="ico">🗣️</span><span data-i18n="mnav_1">Translate</span></button>
+  <button data-step="2"><span class="ico">🔢</span><span data-i18n="mnav_2">Chart</span></button>
+  <button data-step="3"><span class="ico">🃏</span><span data-i18n="mnav_3">Cards</span></button>
+  <button data-step="4"><span class="ico">📝</span><span data-i18n="mnav_4">Quiz</span></button>
+  <button data-step="5"><span class="ico">👩‍🏫</span><span data-i18n="mnav_5">Teacher</span></button>
+  <button data-step="7"><span class="ico">📊</span><span data-i18n="mnav_7">Stats</span></button>
+  <button data-step="8"><span class="ico">🧑‍🎓</span><span data-i18n="mnav_8">Help</span></button>
+  <button data-step="9"><span class="ico">🎮</span><span data-i18n="mnav_9">Kids</span></button>
+  <button data-step="10"><span class="ico">🎒</span><span data-i18n="mnav_10">Student</span></button>
+  <button data-step="11"><span class="ico">📖</span><span>Stories</span></button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+</div><!-- /appRoot -->
+
+<script>
+/* ========== DATA ========== */
+/* Big offline phrase bank — Hindi Devanagari + Roman Hindi + English */
+const DICT = {
+  sat: {
+    "आज हम संख्याएँ सीखेंगे।": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱮᱞ ᱵᱚᱱ ᱪᱮᱫ ᱟ᱾",
+    "नमस्कार": "ᱡᱚᱦᱟᱨ", "नमस्ते": "ᱡᱚᱦᱟᱨ",
+    "नमस्ते आप कैसे हैं": "ᱡᱚᱦᱟᱨ, ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "नमस्ते आप कैसे हो": "ᱡᱚᱦᱟᱨ, ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "आप कैसे हैं": "ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "आप कैसे हो": "ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "मैं ठीक हूँ": "ᱤᱧ ᱵᱟᱹᱱᱩᱜᱼᱟ",
+    "एक": "ᱢᱤᱫ", "दो": "ᱵᱟᱹᱨ", "तीन": "ᱯᱮ", "चार": "ᱯᱳᱱ", "पाँच": "ᱢᱚᱬᱮ",
+    "छह": "ᱛᱩᱨᱩᱭ", "सात": "ᱮᱭᱟᱭ", "आठ": "ᱤᱨᱟᱹᱞ", "नौ": "ᱟᱨᱮ", "दस": "ᱜᱮᱞ",
+    "आम": "ᱟᱢ", "पानी": "ᱫᱟᱜ", "स्कूल": "ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ",
+    "धन्यवाद": "ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ", "बहुत अच्छा": "ᱟᱹᱰᱤ ᱵᱮᱥ",
+    "कृपया बैठ जाओ": "ᱫᱟᱭᱟᱠᱟᱛᱮ ᱫᱩᱲᱩᱵ ᱢᱮ", "गिनती करो": "ᱞᱮᱠᱷᱟ ᱢᱮ",
+    "यह क्या है?": "ᱱᱚᱣᱟ ᱪᱮᱫ ᱠᱟᱱᱟ?", "शुभ प्रभात": "ᱥᱩᱯᱩᱨ ᱥᱟᱹᱣ",
+    "मेरा नाम है": "ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱠᱟᱱᱟ", "क्या नाम है": "ᱪᱮᱫ ᱧᱩᱛᱩᱢ ᱢᱮᱱᱟᱜᱼᱟ?",
+    "फिर से बोलो": "ᱟᱨᱦᱚᱸ ᱢᱮᱛᱟᱜ ᱢᱮ", "समझ गए": "ᱵᱩᱡᱷᱟᱹᱣ ᱮᱱᱟ",
+    "आज": "ᱛᱮᱦᱮᱧ", "हम": "ᱟᱵᱚ", "सीखेंगे": "ᱪᱮᱫ ᱟ᱾", "संख्याएँ": "ᱮᱞ",
+    "कृपया": "ᱫᱟᱭᱟᱠᱟᱛᱮ", "बैठ जाओ": "ᱫᱩᱲᱩᱵ ᱢᱮ", "खड़े हो जाओ": "ᱛᱤᱸᱜᱩ ᱢᱮ",
+    "किताब": "ᱯᱚᱛᱚᱵ", "कलम": "ᱠᱚᱞᱚᱢ", "बच्चा": "ᱜᱤᱫᱽᱨᱟᱹ", "शिक्षक": "ᱢᱟᱪᱮᱛ",
+    "खाना": "ᱡᱚᱢ", "रोटी": "ᱨᱩᱴᱤ", "दूध": "ᱫᱩᱫᱷ", "पेड़": "ᱫᱟᱨᱮ", "फूल": "ᱵᱟᱦᱟ",
+    "सूरज": "ᱥᱤᱸᱜᱤ", "चाँद": "ᱪᱟᱸᱫᱚ", "तारा": "ᱤᱯᱤᱞ", "घर": "ᱚᱲᱟᱜ", "गाँव": "ᱟᱹᱛᱩ",
+    "माँ": "ᱟᱭᱳ", "पिता": "ᱵᱟᱵᱟ", "भाई": "ᱵᱚᱭᱦᱟ", "बहन": "ᱢᱤᱥᱤ",
+    "हाँ": "ᱦᱮᱸ", "नहीं": "ᱵᱟᱝ", "कृपया आओ": "ᱦᱤᱡᱩᱜ ᱢᱮ", "जाओ": "ᱥᱮᱱᱚᱜ ᱢᱮ",
+    "नमस्ते": "ᱡᱚᱦᱟᱨ", "नमस्कार": "ᱡᱚᱦᱟᱨ",
+    // English / Roman
+    "namaste": "ᱡᱚᱦᱟᱨ", "namaskar": "ᱡᱚᱦᱟᱨ",
+    "namaste aap kaise hai": "ᱡᱚᱦᱟᱨ, ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "namaste aap kaise ho": "ᱡᱚᱦᱟᱨ, ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "aap kaise hai": "ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?", "aap kaise ho": "ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "main theek hoon": "ᱤᱧ ᱵᱟᱹᱱᱩᱜᱼᱟ", "main theek hun": "ᱤᱧ ᱵᱟᱹᱱᱩᱜᱼᱟ",
+    "dhanyavad": "ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ", "shukriya": "ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ",
+    "hello": "ᱡᱚᱦᱟᱨ", "how are you": "ᱪᱮᱫ ᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?",
+    "good morning": "ᱥᱩᱯᱩᱨ ᱥᱟᱹᱣ", "thank you": "ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ",
+    "one": "ᱢᱤᱫ", "two": "ᱵᱟᱹᱨ", "three": "ᱯᱮ", "four": "ᱯᱳᱱ", "five": "ᱢᱚᱬᱮ",
+    "six": "ᱛᱩᱨᱩᱭ", "seven": "ᱮᱭᱟᱭ", "eight": "ᱤᱨᱟᱹᱞ", "nine": "ᱟᱨᱮ", "ten": "ᱜᱮᱞ",
+    "water": "ᱫᱟᱜ", "mango": "ᱟᱢ", "school": "ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ",
+    "Today we will learn numbers.": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱮᱞ ᱵᱚᱱ ᱪᱮᱫ ᱟ᱾",
+    "today we will learn numbers": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱮᱞ ᱵᱚᱱ ᱪᱮᱫ ᱟ᱾",
+    "please sit down": "ᱫᱟᱭᱟᱠᱟᱛᱮ ᱫᱩᱲᱩᱵ ᱢᱮ", "count": "ᱞᱮᱠᱷᱟ ᱢᱮ",
+    "what is this": "ᱱᱚᱣᱟ ᱪᱮᱫ ᱠᱟᱱᱟ?", "my name is": "ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱠᱟᱱᱟ",
+    "very good": "ᱟᱹᱰᱤ ᱵᱮᱥ", "sit down": "ᱫᱩᱲᱩᱵ ᱢᱮ", "stand up": "ᱛᱤᱸᱜᱩ ᱢᱮ",
+    "book": "ᱯᱚᱛᱚᱵ", "pen": "ᱠᱚᱞᱚᱢ", "child": "ᱜᱤᱫᱽᱨᱟᱹ", "teacher": "ᱢᱟᱪᱮᱛ",
+    "food": "ᱡᱚᱢ", "tree": "ᱫᱟᱨᱮ", "flower": "ᱵᱟᱦᱟ", "sun": "ᱥᱤᱸᱜᱤ", "moon": "ᱪᱟᱸᱫᱚ",
+    "house": "ᱚᱲᱟᱜ", "village": "ᱟᱹᱛᱩ", "mother": "ᱟᱭᱳ", "father": "ᱵᱟᱵᱟ",
+    "yes": "ᱦᱮᱸ", "no": "ᱵᱟᱝ", "come": "ᱦᱤᱡᱩᱜ ᱢᱮ", "go": "ᱥᱮᱱᱚᱜ ᱢᱮ",
+    "good afternoon": "ᱥᱩᱯᱩᱨ ᱛᱤᱸᱜᱩ", "good night": "ᱥᱩᱯᱩᱨ ᱧᱤᱫᱟᱹ",
+    "open your book": "ᱯᱚᱛᱚᱵ ᱠᱷᱩᱞᱟᱹᱭ ᱢᱮ", "close your book": "ᱯᱚᱛᱚᱵ ᱵᱚᱸᱫᱚᱭ ᱢᱮ",
+    "listen carefully": "ᱥᱟᱵᱫᱷᱟᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ", "repeat after me": "ᱤᱧ ᱛᱟᱭᱚᱢ ᱟᱹᱨᱩ ᱢᱮ",
+    "very good": "ᱟᱹᱰᱤ ᱵᱮᱥ", "well done": "ᱟᱹᱰᱤ ᱵᱮᱥ", "clap your hands": "ᱛᱤ ᱛᱟᱞᱟ ᱢᱮ",
+    "stand in a line": "ᱞᱟᱭᱤᱱ ᱨᱮ ᱛᱤᱸᱜᱩ ᱢᱮ", "come here": "ᱱᱚᱰᱮ ᱦᱤᱡᱩᱜ ᱢᱮ",
+    "go back": "ᱛᱟᱭᱚᱢ ᱥᱮᱱᱚᱜ ᱢᱮ", "what is your name": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱪᱮᱫ ᱠᱟᱱᱟ?",
+    "my name is": "ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱠᱟᱱᱟ", "how old are you": "ᱟᱢ ᱛᱤᱱᱟᱹᱜ ᱩᱢᱮᱨ ᱢᱮᱱᱟᱢᱟ?",
+    "I am fine": "ᱤᱧ ᱵᱟᱹᱱᱩᱜᱼᱟ", "see you tomorrow": "ᱜᱟᱹᱯᱤᱡ ᱧᱮᱞ ᱵᱚᱱ ᱧᱟᱢᱟ",
+    "good evening": "ᱥᱩᱯᱩᱨ ᱟᱭᱩᱵ", "please open the door": "ᱫᱟᱭᱟᱠᱟᱛᱮ ᱫᱩᱣᱟᱹᱨ ᱠᱷᱩᱞᱟᱹᱭ ᱢᱮ",
+    "write your name": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱚᱞ ᱢᱮ", "read this": "ᱱᱚᱣᱟ ᱯᱟᱲᱦᱟᱣ ᱢᱮ",
+    "count from one to ten": "ᱢᱤᱫ ᱠᱷᱚᱱ ᱜᱮᱞ ᱫᱷᱟᱹᱵᱤᱡ ᱞᱮᱠᱷᱟ ᱢᱮ",
+    "today we will learn": "ᱛᱮᱦᱮᱧ ᱟᱵᱚ ᱪᱮᱫ ᱟᱵᱚᱱ", "numbers": "ᱮᱞ",
+    "colours": "ᱨᱚᱝ", "animals": "ᱡᱟᱱᱣᱟᱨ", "fruits": "ᱡᱚ",
+    "red": "ᱟᱨᱟᱜ", "blue": "ᱱᱤᱞ", "green": "ᱦᱟᱹᱨᱭᱟᱹᱲ", "yellow": "ᱥᱟᱥᱟᱝ",
+    "dog": "ᱥᱮᱛᱟ", "cat": "ᱯᱩᱥᱤ", "bird": "ᱪᱮᱬᱮ", "fish": "ᱦᱟᱹᱠᱩ",
+    "apple": "ᱥᱮᱵ", "banana": "ᱠᱟᱭᱨᱟ", "rice": "ᱫᱟᱠᱟ", "milk": "ᱫᱩᱫᱷ",
+    "friend": "ᱜᱟᱛᱮ", "play": "ᱮᱱᱮᱡ", "sing": "ᱥᱮᱨᱮᱧ", "dance": "ᱮᱱᱮᱡ",
+    "happy": "ᱨᱟᱹᱥᱠᱟᱹ", "sad": "ᱵᱟᱹᱲᱤᱡ", "big": "ᱢᱟᱨᱟᱝ", "small": "ᱦᱩᱰᱤᱧ",
+    "red": "ᱟᱨᱟᱜ", "blue": "ᱱᱤᱞ", "green": "ᱦᱟᱹᱨᱭᱟᱹᱲ", "yellow": "ᱥᱟᱥᱟᱝ", "white": "ᱯᱩᱸᱰ", "black": "ᱦᱮᱸᱫᱮ",
+    "dog": "ᱥᱮᱛᱟ", "cat": "ᱯᱩᱥᱤ", "bird": "ᱪᱮᱬᱮ", "fish": "ᱦᱟᱹᱠᱩ", "cow": "ᱜᱟᱹᱭ",
+    "apple": "ᱥᱮᱵ", "banana": "ᱠᱟᱭᱨᱟ", "rice": "ᱫᱟᱠᱟ", "milk": "ᱫᱩᱫᱷ",
+    "friend": "ᱜᱟᱛᱮ", "play": "ᱮᱱᱮᱡ", "sing": "ᱥᱮᱨᱮᱧ", "dance": "ᱮᱱᱮᱡ",
+    "open": "ᱠᱷᱩᱞᱟᱹ", "close": "ᱵᱚᱸᱫ", "read": "ᱯᱟᱲᱦᱟᱣ", "write": "ᱚᱞ",
+    "come here": "ᱱᱚᱰᱮ ᱦᱤᱡᱩᱜ ᱢᱮ", "go back": "ᱛᱟᱭᱚᱢ ᱥᱮᱱᱚᱜ ᱢᱮ",
+    "what is your name": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱪᱮᱫ ᱠᱟᱱᱟ?", "how old are you": "ᱟᱢ ᱛᱤᱱᱟᱹᱜ ᱩᱢᱮᱨ ᱢᱮᱱᱟᱢᱟ?",
+    "good afternoon": "ᱥᱩᱯᱩᱨ ᱛᱤᱸᱜᱩ", "good night": "ᱥᱩᱯᱩᱨ ᱧᱤᱫᱟᱹ", "good evening": "ᱥᱩᱯᱩᱨ ᱟᱭᱩᱵ",
+    "please open the door": "ᱫᱟᱭᱟᱠᱟᱛᱮ ᱫᱩᱣᱟᱹᱨ ᱠᱷᱩᱞᱟᱹᱭ ᱢᱮ",
+    "write your name": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱚᱞ ᱢᱮ", "read this": "ᱱᱚᱣᱟ ᱯᱟᱲᱦᱟᱣ ᱢᱮ",
+    "count from one to ten": "ᱢᱤᱫ ᱠᱷᱚᱱ ᱜᱮᱞ ᱫᱷᱟᱹᱵᱤᱡ ᱞᱮᱠᱷᱟ ᱢᱮ",
+    "listen carefully": "ᱥᱟᱵᱫᱷᱟᱱ ᱛᱮ ᱟᱧᱡᱚᱢ ᱢᱮ", "repeat after me": "ᱤᱧ ᱛᱟᱭᱚᱢ ᱟᱹᱨᱩ ᱢᱮ",
+    "clap your hands": "ᱛᱤ ᱛᱟᱞᱟ ᱢᱮ", "stand in a line": "ᱞᱟᱭᱤᱱ ᱨᱮ ᱛᱤᱸᱜᱩ ᱢᱮ",
+    "see you tomorrow": "ᱜᱟᱹᱯᱤᱡ ᱧᱮᱞ ᱵᱚᱱ ᱧᱟᱢᱟ",
+    "colours": "ᱨᱚᱝ", "animals": "ᱡᱟᱱᱣᱟᱨ", "fruits": "ᱡᱚ",
+    "I am fine": "ᱤᱧ ᱵᱟᱹᱱᱩᱜᱼᱟ", "very good": "ᱟᱹᱰᱤ ᱵᱮᱥ", "well done": "ᱟᱹᱰᱤ ᱵᱮᱥ"
+  },
+  ho: {
+    "आज हम संख्याएँ सीखेंगे।": "Abu teheñ lekha bu ituna.",
+    "नमस्कार": "Johar", "नमस्ते": "Johar",
+    "नमस्ते आप कैसे हैं": "Johar, chia leka menama?",
+    "नमस्ते आप कैसे हो": "Johar, chia leka menama?",
+    "आप कैसे हैं": "Chia leka menama?", "आप कैसे हो": "Chia leka menama?",
+    "मैं ठीक हूँ": "Añ banug-a",
+    "एक": "mi", "दो": "baria", "तीन": "apia", "चार": "ponia", "पाँच": "pane",
+    "छह": "turui", "सात": "eyai", "आठ": "iral", "नौ": "are", "दस": "gel",
+    "आम": "uli", "पानी": "dah", "स्कूल": "iskul", "धन्यवाद": "Sadu", "बहुत अच्छा": "Bes ge",
+    "गिनती करो": "Lekha me", "शुभ प्रभात": "Supur saw",
+    "कृपया बैठ जाओ": "Daya kate dub me", "यह क्या है?": "Ne chia kana?",
+    "मेरा नाम है": "Añag nutum kana", "फिर से बोलो": "Arho men me",
+    "आज": "Teheñ", "हम": "Abu", "हाँ": "He", "नहीं": "Ka",
+    "किताब": "Puthi", "कलम": "Kolom", "बच्चा": "Hon", "शिक्षक": "Guru",
+    "खाना": "Jom", "घर": "Ora", "गाँव": "Hatu", "माँ": "Enga", "पिता": "Apu",
+    "namaste": "Johar", "namaskar": "Johar",
+    "namaste aap kaise hai": "Johar, chia leka menama?",
+    "namaste aap kaise ho": "Johar, chia leka menama?",
+    "aap kaise hai": "Chia leka menama?", "aap kaise ho": "Chia leka menama?",
+    "main theek hoon": "Añ banug-a", "main theek hun": "Añ banug-a",
+    "dhanyavad": "Sadu", "hello": "Johar", "how are you": "Chia leka menama?",
+    "good morning": "Supur saw", "thank you": "Sadu",
+    "one": "mi", "two": "baria", "three": "apia", "four": "ponia", "five": "pane",
+    "six": "turui", "seven": "eyai", "eight": "iral", "nine": "are", "ten": "gel",
+    "water": "dah", "mango": "uli", "school": "iskul",
+    "Today we will learn numbers.": "Abu teheñ lekha bu ituna.",
+    "today we will learn numbers": "Abu teheñ lekha bu ituna.",
+    "please sit down": "Daya kate dub me", "count": "Lekha me",
+    "what is this": "Ne chia kana?", "my name is": "Añag nutum kana",
+    "very good": "Bes ge", "sit down": "Dub me", "stand up": "Tingu me",
+    "book": "Puthi", "pen": "Kolom", "child": "Hon", "teacher": "Guru",
+    "food": "Jom", "house": "Ora", "village": "Hatu", "mother": "Enga", "father": "Apu",
+    "yes": "He", "no": "Ka", "come": "Hiju me", "go": "Seno me",
+    "well done": "Bes ge", "open your book": "Puthi khula me",
+    "listen carefully": "Sabdhan te anjom me", "come here": "Nere hiju me",
+    "what is your name": "Amag nutum chia kana?", "I am fine": "Añ banug-a",
+    "today we will learn": "Abu teheñ ituna", "numbers": "lekha",
+    "red": "arag", "blue": "nil", "green": "hariar", "dog": "seta", "cat": "pusi",
+    "friend": "saki", "happy": "raska", "big": "marang", "small": "huding"
+  },
+  mun: {
+    "आज हम संख्याएँ सीखेंगे।": "Abu tiñ lekha bu ituna.",
+    "नमस्कार": "Johar", "नमस्ते": "Johar",
+    "नमस्ते आप कैसे हैं": "Johar, che leka menama?",
+    "नमस्ते आप कैसे हो": "Johar, che leka menama?",
+    "आप कैसे हैं": "Che leka menama?", "आप कैसे हो": "Che leka menama?",
+    "मैं ठीक हूँ": "Iñ bugin-a",
+    "एक": "miḍ", "दो": "baria", "तीन": "apia", "चार": "ponia", "पाँच": "pane",
+    "छह": "turui", "सात": "eyai", "आठ": "iral", "नौ": "are", "दस": "gel",
+    "आम": "yoe", "पानी": "diyang", "स्कूल": "iskul", "धन्यवाद": "Sadu", "बहुत अच्छा": "Bes",
+    "गिनती करो": "Lekha me", "शुभ प्रभात": "Supur saw",
+    "कृपया बैठ जाओ": "Daya kate dub me", "यह क्या है?": "Ne che kana?",
+    "मेरा नाम है": "Iñag nutum kana", "फिर से बोलो": "Arho men me",
+    "आज": "Tiñ", "हम": "Abu", "हाँ": "He", "नहीं": "Ka",
+    "किताब": "Puthi", "कलम": "Kolom", "बच्चा": "Hon", "शिक्षक": "Guru",
+    "खाना": "Jom", "घर": "Ora", "गाँव": "Hatu", "माँ": "Enga", "पिता": "Apu",
+    "namaste": "Johar", "namaskar": "Johar",
+    "namaste aap kaise hai": "Johar, che leka menama?",
+    "namaste aap kaise ho": "Johar, che leka menama?",
+    "aap kaise hai": "Che leka menama?", "aap kaise ho": "Che leka menama?",
+    "main theek hoon": "Iñ bugin-a", "dhanyavad": "Sadu",
+    "hello": "Johar", "how are you": "Che leka menama?",
+    "one": "miḍ", "two": "baria", "three": "apia", "four": "ponia", "five": "pane",
+    "six": "turui", "seven": "eyai", "eight": "iral", "nine": "are", "ten": "gel",
+    "water": "diyang", "mango": "yoe", "school": "iskul",
+    "Today we will learn numbers.": "Abu tiñ lekha bu ituna.",
+    "today we will learn numbers": "Abu tiñ lekha bu ituna.",
+    "please sit down": "Daya kate dub me", "count": "Lekha me",
+    "what is this": "Ne che kana?", "my name is": "Iñag nutum kana",
+    "very good": "Bes", "sit down": "Dub me", "stand up": "Tingu me",
+    "book": "Puthi", "pen": "Kolom", "child": "Hon", "teacher": "Guru",
+    "food": "Jom", "house": "Ora", "village": "Hatu", "mother": "Enga", "father": "Apu",
+    "yes": "He", "no": "Ka", "come": "Hiju me", "go": "Seno me",
+    "well done": "Bes", "open your book": "Puthi khula me",
+    "listen carefully": "Sabdhan te anjom me", "come here": "Nere hiju me",
+    "what is your name": "Amag nutum che kana?", "I am fine": "Iñ bugin-a",
+    "today we will learn": "Abu tiñ ituna", "numbers": "lekha",
+    "red": "arag", "blue": "nil", "green": "hariar", "dog": "seta", "cat": "pusi",
+    "friend": "saki", "happy": "raska", "big": "marang", "small": "huding"
+  },
+};
+
+/* Word-level maps for partial matches — expanded for better phrase coverage */
+const WORD = {
+  sat: {
+    "नमस्ते":"ᱡᱚᱦᱟᱨ","नमस्कार":"ᱡᱚᱦᱟᱨ","आप":"ᱟᱢ","कैसे":"ᱪᱮᱫ ᱞᱮᱠᱟ","हैं":"ᱢᱮᱱᱟᱢᱟ","हो":"ᱢᱮᱱᱟᱢᱟ",
+    "एक":"ᱢᱤᱫ","दो":"ᱵᱟᱹᱨ","तीन":"ᱯᱮ","चार":"ᱯᱳᱱ","पाँच":"ᱢᱚᱬᱮ","छह":"ᱛᱩᱨᱩᱭ","सात":"ᱮᱭᱟᱭ","आठ":"ᱤᱨᱟᱹᱞ","नौ":"ᱟᱨᱮ","दस":"ᱜᱮᱞ",
+    "आम":"ᱟᱢ","पानी":"ᱫᱟᱜ","स्कूल":"ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ","धन्यवाद":"ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ",
+    "आज":"ᱛᱮᱦᱮᱧ","हम":"ᱟᱵᱚ","सीखेंगे":"ᱪᱮᱫ ᱟ","संख्याएँ":"ᱮᱞ","संख्या":"ᱮᱞ",
+    "कृपया":"ᱫᱟᱭᱟᱠᱟᱛᱮ","बैठ":"ᱫᱩᱲᱩᱵ","जाओ":"ᱢᱮ","गिनती":"ᱞᱮᱠᱷᱟ","करो":"ᱢᱮ",
+    "यह":"ᱱᱚᱣᱟ","क्या":"ᱪᱮᱫ","है":"ᱠᱟᱱᱟ","शुभ":"ᱥᱩᱯᱩᱨ","प्रभात":"ᱥᱟᱹᱣ",
+    "मेरा":"ᱤᱧᱟᱜ","नाम":"ᱧᱩᱛᱩᱢ","फिर":"ᱟᱨᱦᱚᱸ","बोलो":"ᱢᱮᱛᱟᱜ ᱢᱮ","समझ":"ᱵᱩᱡᱷᱟᱹᱣ",
+    "बहुत":"ᱟᱹᱰᱤ","अच्छा":"ᱵᱮᱥ","किताब":"ᱯᱚᱛᱚᱵ","कलम":"ᱠᱚᱞᱚᱢ","बच्चा":"ᱜᱤᱫᱽᱨᱟᱹ",
+    "शिक्षक":"ᱢᱟᱪᱮᱛ","खाना":"ᱡᱚᱢ","घर":"ᱚᱲᱟᱜ","गाँव":"ᱟᱹᱛᱩ","माँ":"ᱟᱭᱳ","पिता":"ᱵᱟᱵᱟ",
+    "हाँ":"ᱦᱮᱸ","नहीं":"ᱵᱟᱝ","आओ":"ᱦᱤᱡᱩᱜ ᱢᱮ",
+    "namaste":"ᱡᱚᱦᱟᱨ","namaskar":"ᱡᱚᱦᱟᱨ","aap":"ᱟᱢ","kaise":"ᱪᱮᱫ ᱞᱮᱠᱟ","hai":"ᱢᱮᱱᱟᱢᱟ","ho":"ᱢᱮᱱᱟᱢᱟ",
+    "hello":"ᱡᱚᱦᱟᱨ","how":"ᱪᱮᱫ ᱞᱮᱠᱟ","are":"","you":"ᱟᱢ","thank":"ᱥᱟᱫᱷᱩ","thanks":"ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ",
+    "one":"ᱢᱤᱫ","two":"ᱵᱟᱹᱨ","three":"ᱯᱮ","four":"ᱯᱳᱱ","five":"ᱢᱚᱬᱮ","six":"ᱛᱩᱨᱩᱭ","seven":"ᱮᱭᱟᱭ","eight":"ᱤᱨᱟᱹᱞ","nine":"ᱟᱨᱮ","ten":"ᱜᱮᱞ",
+    "water":"ᱫᱟᱜ","mango":"ᱟᱢ","school":"ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ","today":"ᱛᱮᱦᱮᱧ","we":"ᱟᱵᱚ","learn":"ᱪᱮᱫ","numbers":"ᱮᱞ",
+    "please":"ᱫᱟᱭᱟᱠᱟᱛᱮ","sit":"ᱫᱩᱲᱩᱵ","down":"ᱢᱮ","count":"ᱞᱮᱠᱷᱟ","what":"ᱪᱮᱫ","this":"ᱱᱚᱣᱟ","is":"ᱠᱟᱱᱟ",
+    "good":"ᱥᱩᱯᱩᱨ","morning":"ᱥᱟᱹᱣ","very":"ᱟᱹᱰᱤ","book":"ᱯᱚᱛᱚᱵ","pen":"ᱠᱚᱞᱚᱢ","child":"ᱜᱤᱫᱽᱨᱟᱹ","teacher":"ᱢᱟᱪᱮᱛ",
+    "food":"ᱡᱚᱢ","house":"ᱚᱲᱟᱜ","village":"ᱟᱹᱛᱩ","mother":"ᱟᱭᱳ","father":"ᱵᱟᱵᱟ","yes":"ᱦᱮᱸ","no":"ᱵᱟᱝ","come":"ᱦᱤᱡᱩᱜ","go":"ᱥᱮᱱᱚᱜ"
+  },
+  ho: {
+    "नमस्ते":"Johar","नमस्कार":"Johar","आप":"am","कैसे":"chia leka","हैं":"menama","हो":"menama",
+    "एक":"mi","दो":"baria","तीन":"apia","चार":"ponia","पाँच":"pane","छह":"turui","सात":"eyai","आठ":"iral","नौ":"are","दस":"gel",
+    "आम":"uli","पानी":"dah","स्कूल":"iskul","धन्यवाद":"Sadu","आज":"Teheñ","हम":"Abu",
+    "कृपया":"Daya kate","बैठ":"dub","गिनती":"Lekha","बहुत":"Bes","अच्छा":"ge",
+    "यह":"Ne","क्या":"chia","है":"kana","मेरा":"Añag","नाम":"nutum","किताब":"Puthi","कलम":"Kolom",
+    "बच्चा":"Hon","शिक्षक":"Guru","खाना":"Jom","घर":"Ora","गाँव":"Hatu","माँ":"Enga","पिता":"Apu","हाँ":"He","नहीं":"Ka",
+    "namaste":"Johar","aap":"am","kaise":"chia leka","hai":"menama","ho":"menama",
+    "hello":"Johar","how":"chia leka","you":"am","one":"mi","two":"baria","three":"apia","four":"ponia","five":"pane",
+    "water":"dah","mango":"uli","school":"iskul","today":"Teheñ","we":"Abu","learn":"ituna","numbers":"lekha",
+    "please":"Daya kate","sit":"dub","count":"Lekha","what":"chia","this":"Ne","good":"Supur","morning":"saw",
+    "book":"Puthi","pen":"Kolom","child":"Hon","teacher":"Guru","food":"Jom","house":"Ora","yes":"He","no":"Ka"
+  },
+  mun: {
+    "नमस्ते":"Johar","नमस्कार":"Johar","आप":"am","कैसे":"che leka","हैं":"menama","हो":"menama",
+    "एक":"miḍ","दो":"baria","तीन":"apia","चार":"ponia","पाँच":"pane","छह":"turui","सात":"eyai","आठ":"iral","नौ":"are","दस":"gel",
+    "आम":"yoe","पानी":"diyang","स्कूल":"iskul","धन्यवाद":"Sadu","आज":"Tiñ","हम":"Abu",
+    "कृपया":"Daya kate","बैठ":"dub","गिनती":"Lekha","बहुत":"Bes",
+    "यह":"Ne","क्या":"che","है":"kana","मेरा":"Iñag","नाम":"nutum","किताब":"Puthi","कलम":"Kolom",
+    "बच्चा":"Hon","शिक्षक":"Guru","खाना":"Jom","घर":"Ora","गाँव":"Hatu","माँ":"Enga","पिता":"Apu","हाँ":"He","नहीं":"Ka",
+    "namaste":"Johar","aap":"am","kaise":"che leka","hai":"menama",
+    "hello":"Johar","how":"che leka","you":"am","one":"miḍ","two":"baria","three":"apia","four":"ponia","five":"pane",
+    "water":"diyang","mango":"yoe","school":"iskul","today":"Tiñ","we":"Abu","learn":"ituna","numbers":"lekha",
+    "please":"Daya kate","sit":"dub","count":"Lekha","what":"che","this":"Ne","good":"Supur","morning":"saw",
+    "book":"Puthi","pen":"Kolom","child":"Hon","teacher":"Guru","food":"Jom","house":"Ora","yes":"He","no":"Ka"
+  },
+};
+
+const ROMAN = {
+  sat: { "ᱢᱤᱫ":"mid", "ᱵᱟᱹᱨ":"bar", "ᱯᱮ":"pe", "ᱯᱳᱱ":"pon", "ᱢᱚᱬᱮ":"mone", "ᱟᱢ":"ul", "ᱫᱟᱜ":"dag", "ᱡᱚᱦᱟᱨ":"johar", "ᱪᱮᱫ":"ched", "ᱞᱮᱠᱟ":"leka", "ᱢᱮᱱᱟᱢᱟ":"menama", "ᱥᱟᱫᱷᱩ":"sadu", "ᱵᱟᱫᱽ":"bad", "ᱛᱮᱦᱮᱧ":"tehen", "ᱟᱵᱚ":"abo", "ᱮᱞ":"el" },
+  ho:  { "mi":"mi", "baria":"baria", "apia":"apia", "uli":"uli", "dah":"dah", "Johar":"johar", "chia":"chia", "leka":"leka", "menama":"menama", "Sadu":"sadu", "Teheñ":"tehen" },
+  mun: { "miḍ":"mid", "baria":"baria", "apia":"apia", "yoe":"yoe", "diyang":"diyang", "Johar":"johar", "che":"che", "leka":"leka", "Sadu":"sadu", "Tiñ":"tin" }
+};
+
+const CHART = [
+  { v:"1️⃣", hi:"एक", sat:"ᱢᱤᱫ", ro:"mid", ho:"mi", mun:"miḍ", en:"one" },
+  { v:"2️⃣", hi:"दो", sat:"ᱵᱟᱹᱨ", ro:"bar", ho:"baria", mun:"baria", en:"two" },
+  { v:"3️⃣", hi:"तीन", sat:"ᱯᱮ", ro:"pe", ho:"apia", mun:"apia", en:"three" },
+  { v:"4️⃣", hi:"चार", sat:"ᱯᱳᱱ", ro:"pon", ho:"ponia", mun:"ponia", en:"four" },
+  { v:"5️⃣", hi:"पाँच", sat:"ᱢᱚᱬᱮ", ro:"môṇe", ho:"pane", mun:"pane", en:"five" },
+  { v:"🥭", hi:"आम", sat:"ᱟᱢ", ro:"ul / uli", ho:"uli", mun:"yoe", en:"mango" },
+  { v:"💧", hi:"पानी", sat:"ᱫᱟᱜ", ro:"dag / dah", ho:"dah", mun:"diyang", en:"water" },
+  { v:"👋", hi:"नमस्ते", sat:"ᱡᱚᱦᱟᱨ", ro:"johar", ho:"Johar", mun:"Johar", en:"hello" }
+];
+
+const FLASH = [
+  { v:"1️⃣", hi:"एक", tr:"ᱢᱤᱫ · Santhali", ro:"mid", ho:"mi", mun:"miḍ", en:"one" },
+  { v:"2️⃣", hi:"दो", tr:"ᱵᱟᱹᱨ · Santhali", ro:"bar", ho:"baria", mun:"baria", en:"two" },
+  { v:"3️⃣", hi:"तीन", tr:"ᱯᱮ · Santhali", ro:"pe", ho:"apia", mun:"apia", en:"three" },
+  { v:"4️⃣", hi:"चार", tr:"ᱯᱳᱱ · Santhali", ro:"pon", ho:"ponia", mun:"ponia", en:"four" },
+  { v:"5️⃣", hi:"पाँच", tr:"ᱢᱚᱬᱮ · Santhali", ro:"môṇe", ho:"pane", mun:"pane", en:"five" },
+  { v:"🥭", hi:"आम", tr:"ᱟᱢ · ul", ro:"ul / uli", ho:"uli", mun:"yoe", en:"mango" },
+  { v:"💧", hi:"पानी", tr:"ᱫᱟᱜ · dag", ro:"dag / dah", ho:"dah", mun:"diyang", en:"water" },
+  { v:"👋", hi:"नमस्ते", tr:"ᱡᱚᱦᱟᱨ", ro:"johar", ho:"Johar", mun:"Johar", en:"hello" },
+  { v:"6️⃣", hi:"छह", tr:"ᱛᱩᱨᱩᱭ", ro:"turui", ho:"turui", mun:"turui", en:"six" },
+  { v:"🔟", hi:"दस", tr:"ᱜᱮᱞ", ro:"gel", ho:"gel", mun:"gel", en:"ten" },
+  { v:"🏫", hi:"स्कूल", tr:"ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ", ro:"orağ senog", ho:"iskul", mun:"iskul", en:"school" },
+  { v:"🙏", hi:"धन्यवाद", tr:"ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ", ro:"sadu bad", ho:"Sadu", mun:"Sadu", en:"thank you" }
+];
+
+const QUIZ_BANKS = [
+  [
+    { q:"Ol Chiki symbol for 1 (एक)?", o:["ᱢᱤᱫ","ᱵᱟᱹᱨ","ᱯᱮ","ᱯᱳᱱ"], c:0 },
+    { q:"Santhali for Mango?", o:["ᱟᱢ (ul)","ᱫᱟᱜ","ᱫᱟᱨᱮ","ᱮᱞ"], c:0 },
+    { q:"After 2 (ᱵᱟᱹᱨ) comes?", o:["1","4","3 (ᱯᱮ)","5"], c:2 },
+    { q:"Water in Santhali?", o:["ᱫᱟᱜ","ᱥᱤᱛᱩᱝ","ᱫᱟᱨᱮ","ᱢᱤᱫ"], c:0 }
+  ],
+  [
+    { q:"Hello in Santhali?", o:["ᱡᱚᱦᱟᱨ (Johar)","नमस्ते","Hello","Hi"], c:0 },
+    { q:"Number 5 in Santhali?", o:["ᱢᱚᱬᱮ","ᱯᱮ","ᱵᱟᱹᱨ","ᱢᱤᱫ"], c:0 },
+    { q:"'Ul' means?", o:["Mango","Apple","Water","School"], c:0 },
+    { q:"Ho is mainly spoken in?", o:["Jharkhand","Kerala","Punjab","Gujarat"], c:0 }
+  ]
+];
+
+const PRESETS = [
+  "Teach counting 1–5 with pebbles in Santhali",
+  "5-min warm-up for Class 2 numbers",
+  "Mango vocabulary in mother tongue",
+  "Gentle pronunciation correction tips"
+];
+
+/* ========== UI LANGUAGE (interface only — does NOT touch DICT/WORD/ROMAN/CHART/FLASH/QUIZ_BANKS/PRESETS) ========== */
+const UI_STRINGS = {
+  en: {
+    offline_ready: "Offline ready",
+    nav_heading: "Learning path",
+    nav_1: "Translate all", nav_2: "Visual chart", nav_3: "Flashcards",
+    nav_4: "Daily quiz", nav_5: "Teacher AI", nav_6: "Worksheets", nav_7: "Analytics",
+    sidebar_note: 'Built for <b>Jharkhand PALASH</b> MTB-MLE — Ho, Mundari & Santhali first.',
+    step_word: "STEP",
+    mnav_1: "Translate", mnav_2: "Chart", mnav_3: "Cards", mnav_4: "Quiz", mnav_5: "Teacher", mnav_7: "Stats",
+
+    s1_title: "One phrase. Every tribal language.",
+    s1_subtitle: "Type in Hindi or English. Get Santhali, Ho & Mundari together — ready for the classroom.",
+    s1_note: "Solves PS 26042: Hindi-trained teachers can deliver mother-tongue instruction without fluency in Ho / Mundari / Santhali.",
+    s1_label: "YOUR SENTENCE",
+    s1_btn_translate: "✨ Translate into every language",
+    s1_btn_mic: "🎤 Speech input",
+    s1_btn_clear: "Clear",
+    s1_status_ready: "Ready · Offline dictionary active",
+    lang_hi_name: "Hindi (reference)",
+    listen_btn: "🔊 Listen",
+
+    s2_title: "Visual number & object chart",
+    s2_subtitle: "Tap any card to hear the Roman pronunciation. Designed for Class 1–3 FLN.",
+
+    s3_title: "Vernacular flashcards",
+    s3_subtitle: "Hindi → Santhali / Ho / Mundari with Roman guide.",
+    s3_btn_prev: "← Prev", s3_btn_hear: "🔊 Hear", s3_btn_next: "Next →",
+
+    s4_title: "Daily adaptive quiz",
+    s4_subtitle: "Fresh questions every day. Tracks accuracy for the teacher dashboard.",
+    s4_badge: "Daily quiz",
+    s4_loading: "Loading…",
+    s4_daily_label: "Daily",
+    s4_q_progress: "Q {i} of {n}",
+    s4_done: "Done!",
+    s4_score: "Score {s}/{n}",
+    s4_restart: "Restart quiz",
+    s4_correct: "✅ Correct!",
+    s4_wrong: "Keep practising — check the chart",
+
+    s5_title: "Teacher AI assistant",
+    s5_subtitle: "Get 5-minute mother-tongue activity plans aligned to PALASH / FLN.",
+    s5_placeholder: "e.g. How do I teach counting 1–5 with pebbles in Santhali?",
+    s5_btn: "Generate activity plan",
+    s5_out_default: "Ask anything about classroom activities in Ho, Mundari or Santhali.",
+    s5_out_empty: "Type a question or tap a preset.",
+
+    s6_title: "Printable classroom tools",
+    s6_subtitle: "Offline PDF generation — no server needed.",
+    s6_card1_title: "Matching worksheet",
+    s6_card1_desc: "Hindi ↔ Ol Chiki / Roman for Class 1–5",
+    s6_card2_title: "Daily lesson plan",
+    s6_card2_desc: "Warm-up + mother-tongue bridge + practice",
+    s6_download: "Download PDF",
+
+    s7_title: "Progress & impact",
+    s7_subtitle: "Track attempts, accuracy and streaks — export for school records.",
+    s7_attempts: "Attempts", s7_accuracy: "Accuracy", s7_streak: "Streak", s7_level: "Level",
+    s7_btn_report: "📥 Export progress report",
+    s7_btn_reset: "Reset progress",
+
+    streak_suffix: "day streak",
+    level_beginner: "Beginner", level_learner: "Learner", level_intermediate: "Intermediate", level_expert: "Expert",
+
+    toast_type_first: "Type a sentence first",
+    toast_translated: "Translated into Santhali, Ho, Mundari & Hindi",
+    status_translating: "Translating…",
+    status_done: "Done · Offline engine · Santhali · Ho · Mundari · Hindi",
+    toast_nothing_speak: "Nothing to speak",
+    toast_no_speech: "Speech not supported – use Chrome",
+    toast_playing: "🔊 Playing… (media volume)",
+    toast_audio_blocked: "Audio blocked – open in Chrome from Drive",
+    toast_no_sound: "No sound? Media volume UP + Chrome",
+    toast_no_mic: "Mic not available – type instead",
+    toast_listening: "🎤 Listening…",
+    toast_mic_failed: "Mic failed – type the sentence",
+    toast_pdf_loading: "PDF loading…",
+    toast_worksheet_dl: "Worksheet downloaded",
+    toast_lesson_dl: "Lesson plan downloaded",
+    toast_report_dl: "Report exported",
+    toast_progress_reset: "Progress reset",
+    confirm_reset: "Reset all progress?",
+
+    nav_8: "Doubt Solver", nav_9: "Kids Zone", online_badge: "ONLINE",
+    mnav_8: "Help", mnav_9: "Kids",
+    s2_choose_label: "CHOOSE LANGUAGE TO DISPLAY & HEAR",
+    lang_name_sat: "Santhali", lang_name_ho: "Ho", lang_name_mun: "Mundari", lang_name_en: "English",
+    s3_choose_label: "CHOOSE FLASHCARD LANGUAGE",
+
+    s8_title: "Doubt Solver — ask like you ask me",
+    s8_subtitle: "Talk to me like a person. I'll answer like one.",
+    s8_placeholder: "Just ask… How do I say water in Santhali?",
+    s8_btn: "Ask Vani",
+    s8_out_default: "Hey. Ask me the way you'd ask a person — not an app. “How do I say पानी in Santhali?”, “I blanked on the quiz”, “this feels too hard”. I'll answer you straight.",
+    s8_out_empty: "Type a real question first — even one word is enough.",
+    s8_p1: "What is पानी in Santhali?",
+    s8_p2: "I feel shy to speak up in class",
+    s8_p3: "How do I remember एक?",
+    s8_p4: "I got the quiz wrong. What should I do?",
+    s8_p5: "How do I say hello in Ho?",
+    s8_p6: "Teach me counting 1 to 5",
+    s8_reply_shy: "🌱 It's completely okay to feel shy — lots of learners do. Try saying the word very softly to yourself first, then to one friend, before saying it to the whole class. Small steps count. You don't have to be perfect, just try once today.",
+    s8_reply_forgot: "🔁 Forgetting is normal — it means your brain is still building the connection! Go back to the Flashcards step and look at the picture with the word 3 times. Pictures help you remember faster than just words.",
+    s8_reply_hard: "💡 When something feels too hard, break it into tiny pieces. Look at just ONE word or ONE number at a time instead of the whole lesson. Ask your teacher to slow down on that one part — that's exactly what this app is here for.",
+    s8_reply_word: "📖 Type the word into the Translate step (Step 1) and tap 'Listen' next to it — hearing it out loud often makes the meaning click. If it's still unclear, describe what the word is about and ask your teacher directly.",
+    s8_reply_generic: "🤝 Thanks for sharing: \"{q}\". Here's what usually helps: go slow, say it out loud, try the Flashcards or Chart step for a picture, and remember — asking questions means you're learning, not failing.",
+    s8_reply_pronounce: "🗣️ Pronunciation takes practice. Go to Step 1 (Translate), switch Output to 'Voice', and listen to the word 3-4 times. Then say it along with the audio, not after it — that trains your ear and mouth together.",
+    s8_reply_quiz: "📝 Don't worry about marks. Use Try Again on any quiz question you get wrong — you can retry the SAME question right away instead of just moving on. Practising the Flashcards first usually makes the quiz much easier.",
+    s8_reply_slow: "⏳ It's fine to go slow — this app has no timer except the optional Kids Zone game. Do a little bit each day (even 2-3 words) instead of trying to finish everything at once. Small daily practice beats one long session.",
+
+    s9_title: "Kids Zone — memory match",
+    s9_subtitle: "A short, fun break to practise numbers — needs internet, and locks itself after one round a day.",
+    s9_strict_note: "⏱️ One 5-minute play session per day. This keeps the fun area from pulling focus away from the actual lessons.",
+    s9_offline_msg: "Kids Zone needs an internet connection. Please connect and come back — your lessons still work fully offline!",
+    s9_daily_limit_msg: "You've already played today! Kids Zone unlocks again tomorrow — for now, let's go back to learning.",
+    s9_moves: "Moves", s9_pairs: "Pairs",
+    s9_toast_won: "🎉 All matched! Great memory — see you tomorrow!",
+    s9_toast_timeup: "⏰ Time's up! Back to lessons — see you tomorrow.",
+
+    s1_output_label: "OUTPUT — SHOW ME ONLY",
+    mode_text: "📝 Text", mode_voice: "🔊 Voice", mode_visual: "🖼️ Visual",
+    s1_voice_playing: "Playing in {lang}…",
+    s1_replay: "🔁 Replay",
+
+    s4_try_again: "🔁 Try Again",
+    s4_try_same: "🔁 Try this question again",
+    s4_skip: "Skip →",
+
+    s8_btn_listen: "🔊 Listen to answer",
+
+    nav_10: "Student Section", mnav_10: "Student",
+    s10_title: "Student Section",
+    s10_subtitle: "AI progress detector + upload class material and get it in your mother tongue.",
+    s10_ai_title: "AI Progress Detector",
+    s10_ai_desc: "Analyses your quiz, flashcard & translation activity and tells you exactly what to practise next.",
+    s10_ai_btn: "Analyse my progress",
+    s10_ai_default: "Tap the button — I'll check your attempts, accuracy and streak and suggest what to do next.",
+    s10_pdf_title: "Upload PDF · Convert to my language",
+    s10_pdf_desc: "Upload a class handout (PDF). VaniSetu.ai will pull out the text and convert known words into your selected mother tongue.",
+    s10_pdf_drop: "📎 Choose a PDF file from your device",
+    s10_pdf_btn: "Convert to my language",
+    s10_pdf_download: "⬇️ Download converted PDF",
+    s10_pdf_ready: "No file selected.",
+    s10_pdf_default: "Converted text will appear here — known classroom words are shown in your mother tongue; the rest stays as-is."
+  },
+  ta: {
+    offline_ready: "ஆஃப்லைன் தயார்",
+    nav_heading: "கற்றல் பாதை",
+    nav_1: "அனைத்தையும் மொழிபெயர்", nav_2: "காட்சி விளக்கப்படம்", nav_3: "மொழி அட்டைகள்",
+    nav_4: "தினசரி வினாடி வினா", nav_5: "ஆசிரியர் AI", nav_6: "பயிற்சி தாள்கள்", nav_7: "பகுப்பாய்வு",
+    sidebar_note: '<b>ஜார்க்கண்ட் PALASH</b> MTB-MLE-க்காக உருவாக்கப்பட்டது — முதலில் Ho, Mundari & Santhali.',
+    step_word: "படி",
+    mnav_1: "மொழிபெயர்", mnav_2: "விளக்கப்படம்", mnav_3: "அட்டைகள்", mnav_4: "வினாடி வினா", mnav_5: "ஆசிரியர்", mnav_7: "புள்ளிவிவரம்",
+
+    s1_title: "ஒரு வாக்கியம். ஒவ்வொரு பழங்குடி மொழியிலும்.",
+    s1_subtitle: "இந்தி அல்லது ஆங்கிலத்தில் தட்டச்சு செய்யுங்கள். Santhali, Ho & Mundari ஒன்றாகப் பெறுங்கள் — வகுப்பறைக்குத் தயார்.",
+    s1_note: "PS 26042-ஐத் தீர்க்கிறது: இந்தி பயிற்சி பெற்ற ஆசிரியர்கள் Ho / Mundari / Santhali சரளமாக அறியாமலேயே தாய்மொழி கற்பித்தலை வழங்க முடியும்.",
+    s1_label: "உங்கள் வாக்கியம்",
+    s1_btn_translate: "✨ ஒவ்வொரு மொழியிலும் மொழிபெயர்",
+    s1_btn_mic: "🎤 குரல் உள்ளீடு",
+    s1_btn_clear: "அழி",
+    s1_status_ready: "தயார் · ஆஃப்லைன் அகராதி இயங்குகிறது",
+    lang_hi_name: "இந்தி (குறிப்பு)",
+    listen_btn: "🔊 கேளுங்கள்",
+
+    s2_title: "காட்சி எண் & பொருள் விளக்கப்படம்",
+    s2_subtitle: "ரோமன் உச்சரிப்பைக் கேட்க எந்த அட்டையையும் தட்டவும். வகுப்பு 1–3 FLN-க்காக வடிவமைக்கப்பட்டது.",
+
+    s3_title: "பேச்சு மொழி அட்டைகள்",
+    s3_subtitle: "இந்தி → Santhali / Ho / Mundari ரோமன் வழிகாட்டியுடன்.",
+    s3_btn_prev: "← முந்தைய", s3_btn_hear: "🔊 கேள்", s3_btn_next: "அடுத்து →",
+
+    s4_title: "தினசரி தகவமைப்பு வினாடி வினா",
+    s4_subtitle: "ஒவ்வொரு நாளும் புதிய கேள்விகள். ஆசிரியர் டாஷ்போர்டுக்கு துல்லியத்தைக் கண்காணிக்கிறது.",
+    s4_badge: "தினசரி வினாடி வினா",
+    s4_loading: "ஏற்றுகிறது…",
+    s4_daily_label: "தினசரி",
+    s4_q_progress: "கேள்வி {i} / {n}",
+    s4_done: "முடிந்தது!",
+    s4_score: "மதிப்பெண் {s}/{n}",
+    s4_restart: "வினாடி வினாவை மீண்டும் தொடங்கு",
+    s4_correct: "✅ சரி!",
+    s4_wrong: "தொடர்ந்து பயிற்சி செய்யுங்கள் — விளக்கப்படத்தைப் பார்க்கவும்",
+
+    s5_title: "ஆசிரியர் AI உதவியாளர்",
+    s5_subtitle: "PALASH / FLN-க்கு ஏற்ப 5 நிமிட தாய்மொழி செயல்பாட்டுத் திட்டங்களைப் பெறுங்கள்.",
+    s5_placeholder: "எ.கா. Santhali-இல் கூழாங்கற்களுடன் 1–5 எண்ணுவதை எப்படி கற்பிப்பது?",
+    s5_btn: "செயல்பாட்டுத் திட்டத்தை உருவாக்கு",
+    s5_out_default: "Ho, Mundari அல்லது Santhali-இல் வகுப்பறை செயல்பாடுகள் பற்றி எதையும் கேளுங்கள்.",
+    s5_out_empty: "ஒரு கேள்வியைத் தட்டச்சு செய்யவும் அல்லது ஒரு preset-ஐத் தட்டவும்.",
+
+    s6_title: "அச்சிடக்கூடிய வகுப்பறை கருவிகள்",
+    s6_subtitle: "ஆஃப்லைன் PDF உருவாக்கம் — சர்வர் தேவையில்லை.",
+    s6_card1_title: "பொருத்துதல் பயிற்சி தாள்",
+    s6_card1_desc: "வகுப்பு 1–5-க்கு இந்தி ↔ Ol Chiki / ரோமன்",
+    s6_card2_title: "தினசரி பாட திட்டம்",
+    s6_card2_desc: "வார்ம்-அப் + தாய்மொழி பாலம் + பயிற்சி",
+    s6_download: "PDF பதிவிறக்கு",
+
+    s7_title: "முன்னேற்றம் & தாக்கம்",
+    s7_subtitle: "முயற்சிகள், துல்லியம் மற்றும் தொடர்ச்சிகளைக் கண்காணிக்கவும் — பள்ளி பதிவுகளுக்கு ஏற்றுமதி செய்யவும்.",
+    s7_attempts: "முயற்சிகள்", s7_accuracy: "துல்லியம்", s7_streak: "தொடர்ச்சி", s7_level: "நிலை",
+    s7_btn_report: "📥 முன்னேற்ற அறிக்கையை ஏற்றுமதி செய்",
+    s7_btn_reset: "முன்னேற்றத்தை மீட்டமை",
+
+    streak_suffix: "நாள் தொடர்ச்சி",
+    level_beginner: "தொடக்கநிலை", level_learner: "கற்பவர்", level_intermediate: "இடைநிலை", level_expert: "நிபுணர்",
+
+    toast_type_first: "முதலில் ஒரு வாக்கியத்தை தட்டச்சு செய்யவும்",
+    toast_translated: "6 மொழிகளில் மொழிபெயர்க்கப்பட்டது (Gujarati உட்பட)",
+    status_translating: "மொழிபெயர்க்கிறது…",
+    status_done: "முடிந்தது · ஆஃப்லைன் இயந்திரம் · Santhali · Ho · Mundari · Gondi · Kurukh · Gujarati",
+    toast_nothing_speak: "பேச எதுவும் இல்லை",
+    toast_no_speech: "பேச்சு ஆதரிக்கப்படவில்லை – Chrome-ஐப் பயன்படுத்தவும்",
+    toast_playing: "🔊 இயங்குகிறது… (மீடியா ஒலி)",
+    toast_audio_blocked: "ஆடியோ தடுக்கப்பட்டது – Drive-இலிருந்து Chrome-இல் திறக்கவும்",
+    toast_no_sound: "ஒலி இல்லையா? மீடியா ஒலியை அதிகரிக்கவும் + Chrome",
+    toast_no_mic: "மைக் கிடைக்கவில்லை – அதற்கு பதிலாக தட்டச்சு செய்யவும்",
+    toast_listening: "🎤 கேட்கிறது…",
+    toast_mic_failed: "மைக் தோல்வியடைந்தது – வாக்கியத்தை தட்டச்சு செய்யவும்",
+    toast_pdf_loading: "PDF ஏற்றப்படுகிறது…",
+    toast_worksheet_dl: "பயிற்சி தாள் பதிவிறக்கப்பட்டது",
+    toast_lesson_dl: "பாட திட்டம் பதிவிறக்கப்பட்டது",
+    toast_report_dl: "அறிக்கை ஏற்றுமதி செய்யப்பட்டது",
+    toast_progress_reset: "முன்னேற்றம் மீட்டமைக்கப்பட்டது",
+    confirm_reset: "எல்லா முன்னேற்றத்தையும் மீட்டமைக்கவா?",
+
+    nav_8: "சந்தேக தீர்வு", nav_9: "குழந்தைகள் மூலை", online_badge: "ஆன்லைன்",
+    mnav_8: "உதவி", mnav_9: "குழந்தைகள்",
+    s2_choose_label: "காட்சிக்கும் கேட்பதற்கும் மொழியைத் தேர்ந்தெடுக்கவும்",
+    lang_name_sat: "சந்தாலி", lang_name_ho: "ஹோ", lang_name_mun: "முண்டாரி", lang_name_gon: "கோண்டி", lang_name_kru: "குருக்", lang_name_guj: "குஜராத்தி", lang_name_ta: "தமிழ்", lang_name_en: "ஆங்கிலம்",
+    s3_choose_label: "அட்டை மொழியைத் தேர்ந்தெடுக்கவும்",
+
+    s8_title: "சந்தேக தீர்வு — எதையும் கேளுங்கள்",
+    s8_subtitle: "ஒரு வார்த்தையில் சிக்கியிருக்கிறீர்களா, வெட்கமாக உள்ளதா, அல்லது ஏதாவது மிகவும் கடினமாக உள்ளதா? இங்கே கேளுங்கள் — எந்த தீர்ப்பும் இல்லை.",
+    s8_placeholder: "எ.கா. இந்த வார்த்தை எனக்குப் புரியவில்லை",
+    s8_btn: "உதவி பெறு",
+    s8_out_default: "உங்களைக் குழப்புவது என்ன என்று சொல்லுங்கள் — நான் எளிமையாக விளக்குகிறேன்.",
+    s8_out_empty: "உங்களைத் தொந்தரவு செய்வதைத் தட்டச்சு செய்யுங்கள், அல்லது மேலே உள்ள பொத்தான்களில் ஒன்றைத் தட்டவும்.",
+    s8_p1: "இந்த வார்த்தை எனக்குப் புரியவில்லை",
+    s8_p2: "வகுப்பில் பேச எனக்கு வெட்கமாக உள்ளது",
+    s8_p3: "இதன் அர்த்தத்தை மறந்துவிட்டேன்",
+    s8_p4: "இது எனக்கு மிகவும் கடினமாக உள்ளது",
+    s8_reply_shy: "🌱 வெட்கப்படுவது முற்றிலும் சரிதான் — நிறைய கற்பவர்கள் அப்படித்தான். முதலில் வார்த்தையை மெதுவாக உங்களுக்குள் சொல்லிப் பாருங்கள், பிறகு ஒரு நண்பரிடம், பிறகு வகுப்பு முழுவதற்கும். சிறிய படிகள் முக்கியம். இன்று ஒரு முறை முயற்சி செய்தால் போதும்.",
+    s8_reply_forgot: "🔁 மறப்பது இயல்பானது — உங்கள் மூளை இன்னும் தொடர்பை உருவாக்கிக் கொண்டிருக்கிறது என்று அர்த்தம்! Flashcards படிக்குச் சென்று, படத்தையும் வார்த்தையையும் 3 முறை பாருங்கள். படங்கள் வார்த்தைகளை விட விரைவாக நினைவில் வைக்க உதவும்.",
+    s8_reply_hard: "💡 ஏதாவது மிகவும் கடினமாக இருக்கும்போது, அதை சிறிய பகுதிகளாகப் பிரியுங்கள். முழு பாடத்திற்கும் பதிலாக ஒரே ஒரு வார்த்தை அல்லது ஒரே ஒரு எண்ணை மட்டும் பாருங்கள். அந்த ஒரு பகுதியில் மெதுவாகச் செல்ல உங்கள் ஆசிரியரிடம் கேளுங்கள் — இந்த ஆப் அதற்காகத்தான் இருக்கிறது.",
+    s8_reply_word: "📖 வார்த்தையை Translate படியில் (படி 1) தட்டச்சு செய்து, அதன் அருகில் உள்ள 'Listen'-ஐத் தட்டவும் — சத்தமாகக் கேட்பது அர்த்தத்தைப் புரிய உதவும். இன்னும் தெளிவாக இல்லையென்றால், வார்த்தை என்ன பற்றியது என்று விவரித்து உங்கள் ஆசிரியரிடம் நேரடியாகக் கேளுங்கள்.",
+    s8_reply_generic: "🤝 பகிர்ந்தமைக்கு நன்றி: \"{q}\". பொதுவாக இது உதவும்: மெதுவாகச் செல்லுங்கள், சத்தமாகச் சொல்லுங்கள், படத்திற்காக Flashcards அல்லது Chart படியை முயற்சிக்கவும் — கேள்விகள் கேட்பது என்பது நீங்கள் கற்கிறீர்கள் என்பதைக் காட்டுகிறது, தோல்வியல்ல.",
+
+    s9_title: "குழந்தைகள் மூலை — நினைவக பொருத்தம்",
+    s9_subtitle: "எண்களைப் பயிற்சி செய்ய ஒரு சிறிய, வேடிக்கையான இடைவேளை — இணையம் தேவை, நாளொன்றுக்கு ஒரு சுற்றுக்குப் பிறகு தானாக பூட்டப்படும்.",
+    s9_strict_note: "⏱️ நாளொன்றுக்கு ஒரு 5-நிமிட விளையாட்டு அமர்வு மட்டுமே. இது வேடிக்கை பகுதி உண்மையான பாடங்களிலிருந்து கவனத்தைத் திசைதிருப்பாமல் இருக்க உதவுகிறது.",
+    s9_offline_msg: "குழந்தைகள் மூலைக்கு இணைய இணைப்பு தேவை. தயவுசெய்து இணைத்துவிட்டு மீண்டும் வாருங்கள் — உங்கள் பாடங்கள் ஆஃப்லைனில் முழுமையாக வேலை செய்யும்!",
+    s9_daily_limit_msg: "நீங்கள் இன்று ஏற்கனவே விளையாடிவிட்டீர்கள்! குழந்தைகள் மூலை நாளை மீண்டும் திறக்கும் — இப்போது கற்றலுக்குத் திரும்புவோம்.",
+    s9_moves: "நகர்வுகள்", s9_pairs: "ஜோடிகள்",
+    s9_toast_won: "🎉 அனைத்தும் பொருந்தியது! சிறந்த நினைவாற்றல் — நாளை சந்திப்போம்!",
+    s9_toast_timeup: "⏰ நேரம் முடிந்தது! பாடங்களுக்குத் திரும்புகிறோம் — நாளை சந்திப்போம்."
+  }
+};
+
+let UI_LANG = localStorage.getItem("vs_lang") || "en";
+
+function t(key) {
+  const table = UI_STRINGS[UI_LANG] || UI_STRINGS.en;
+  return (table[key] !== undefined) ? table[key] : (UI_STRINGS.en[key] !== undefined ? UI_STRINGS.en[key] : key);
+}
+
+function applyLanguage(lang) {
+  UI_LANG = (UI_STRINGS[lang]) ? lang : "en";
+  localStorage.setItem("vs_lang", UI_LANG);
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.innerHTML = t(el.getAttribute("data-i18n"));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
+  });
+  const toggle = document.getElementById("langToggle");
+  if (toggle) toggle.textContent = UI_LANG === "en" ? "EN / தமிழ்" : "தமிழ் / EN";
+  // Re-render dynamic bits that carry translated text
+  if (typeof app !== "undefined" && app.prog) app.updateStats();
+  if (typeof app !== "undefined" && app.quiz) app.renderQuiz();
+  if (typeof app !== "undefined" && document.getElementById("chartGrid")) app.buildChart(app.chartLang);
+}
+
+/* ========== PROGRESS ========== */
+class Progress {
+  constructor() {
+    this.d = JSON.parse(localStorage.getItem("vs_elite") || "null") || {
+      attempts: 0, correct: 0, streak: 0, last: null, flash: 0, trans: 0, doubts: 0
+    };
+    if (this.d.doubts === undefined) this.d.doubts = 0;
+    this.touchStreak();
+  }
+  save() { localStorage.setItem("vs_elite", JSON.stringify(this.d)); }
+  touchStreak() {
+    const t = new Date().toDateString();
+    if (this.d.last !== t) {
+      const y = new Date(); y.setDate(y.getDate()-1);
+      this.d.streak = (this.d.last === y.toDateString()) ? this.d.streak+1 : 1;
+      this.d.last = t; this.save();
+    }
+  }
+  acc() { return this.d.attempts ? Math.round(this.d.correct/this.d.attempts*100) : 0; }
+  level() {
+    const a = this.d.attempts;
+    return a < 8 ? "Beginner" : a < 30 ? "Learner" : a < 80 ? "Intermediate" : "Expert";
+  }
+}
+
+/* ========== APP ========== */
+const app = {
+  step: 1,
+  fi: 0,
+  qi: 0,
+  qs: 0,
+  lastOut: { sat:"", ho:"", mun:"", hi:"" },
+  prog: new Progress(),
+  targetLang: localStorage.getItem("vs_target_lang") || null,
+  role: localStorage.getItem("vs_role") || null,
+  outputMode: "text",
+
+  TARGET_LANG_META: {
+    sat: { name: "Santhali · Ol Chiki", cls: "sat" },
+    ho:  { name: "Ho", cls: "ho" },
+    mun: { name: "Mundari", cls: "mun" }
+  },
+
+  init() {
+    this.initAuthGate();
+
+    document.querySelectorAll(".nav-item, .mobile-nav button").forEach(b => {
+      b.onclick = () => this.go(+b.dataset.step);
+    });
+    document.getElementById("btnTranslate").onclick = () => this.translate();
+    document.getElementById("btnMic").onclick = () => this.mic();
+    document.getElementById("btnClear").onclick = () => {
+      document.getElementById("srcText").value = "";
+      ["outSat","outHo","outMun","outHi"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "—";
+      });
+      const ro = document.getElementById("outSatRo");
+      if (ro) ro.textContent = "";
+    };
+
+    // Speak buttons (data-speak)
+    document.querySelectorAll("[data-speak]").forEach(b => {
+      b.onclick = () => {
+        const code = b.getAttribute("data-speak");
+        const txt = this.lastOut[code] || "";
+        this.speakLang(code, txt);
+      };
+    });
+    document.querySelectorAll("[data-speak-all]").forEach(b => {
+      b.onclick = () => {
+        const code = b.getAttribute("data-speak-all");
+        const txt = this.lastOut[code] || "";
+        document.getElementById("voiceOutLabel").textContent = "Playing in " + (this.langDisplayName(code) || code) + "…";
+        document.getElementById("voiceOutText").textContent = txt;
+        this.speakLang(code, txt);
+      };
+    });
+
+    document.querySelectorAll(".mode-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".mode-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.outputMode = b.dataset.mode;
+        this.renderOutput();
+      };
+    });
+    document.getElementById("btnReplayVoice").onclick = () => {
+      const lang = this.targetLang || "sat";
+      this.speakLang(lang, this.lastOut[lang] || this.lastOut.sat);
+    };
+
+    // Source language picker
+    document.querySelectorAll(".src-lang-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".src-lang-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.srcLang = b.dataset.lang;
+      };
+    });
+    this.srcLang = "hi";
+
+    // Voice profile picker
+    document.querySelectorAll(".voice-profile-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".voice-profile-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.voiceProfile = b.dataset.profile;
+      };
+    });
+
+    // Keyboard
+    this.bindKeyboard();
+
+    this.buildChart();
+    this.bindChartLangPicker();
+    this.bindFlash();
+    this.bindFlashLangPicker();
+    this.loadQuiz();
+    document.getElementById("btnTryAgain").onclick = () => { this.qi = 0; this.qs = 0; this.renderQuiz(); this.toast(t("s4_try_again")); };
+    this.bindAssist();
+    this.bindStudentAssist();
+    this.bindProgressDetector();
+    this.bindPdfUpload();
+    this.bindPDF();
+    this.updateStats();
+    document.getElementById("streakPill").textContent = `🔥 ${this.prog.d.streak} ${t("streak_suffix")}`;
+    // preload voices + populate picker
+    if (window.speechSynthesis) {
+      speechSynthesis.getVoices();
+      speechSynthesis.onvoiceschanged = () => this.populateVoiceSelect();
+      setTimeout(() => this.populateVoiceSelect(), 300);
+    }
+    // language toggle
+    const langBtn = document.getElementById("langToggle");
+    if (langBtn) langBtn.onclick = () => { /* UI stays English for demo clarity */ this.toast("Interface: English"); };
+    applyLanguage("en");
+
+    // theme toggle
+    this.initTheme();
+  },
+
+  initTheme() {
+    const btn = document.getElementById("themeToggle");
+    const apply = (theme) => {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("vs_theme", theme);
+      if (btn) btn.textContent = theme === "dark" ? "🌙 Dark" : "☀️ Light";
+    };
+    const current = localStorage.getItem("vs_theme") || "dark";
+    apply(current);
+    if (btn) {
+      btn.onclick = () => {
+        const next = (document.documentElement.getAttribute("data-theme") === "dark") ? "light" : "dark";
+        apply(next);
+      };
+    }
+  },
+
+  /* ---- LOGIN + LANGUAGE + ROLE GATE ---- */
+  initAuthGate() {
+    const loginScreen = document.getElementById("loginScreen");
+    const langScreen = document.getElementById("langScreen");
+    const roleScreen = document.getElementById("roleScreen");
+    const appRoot = document.getElementById("appRoot");
+    const savedUser = localStorage.getItem("vs_user");
+    this.role = localStorage.getItem("vs_role") || null;
+    this.targetLang = localStorage.getItem("vs_target_lang") || null;
+
+    const hideAllGates = () => {
+      loginScreen.classList.add("hidden");
+      langScreen.classList.add("hidden");
+      if (roleScreen) roleScreen.classList.add("hidden");
+    };
+
+    const enterApp = () => {
+      hideAllGates();
+      appRoot.classList.remove("hidden");
+      this.setTargetLangUI(this.targetLang || "sat");
+      this.applyRoleUI();
+    };
+
+    const showLangScreen = () => {
+      hideAllGates();
+      langScreen.classList.remove("hidden");
+    };
+
+    const showRoleScreen = () => {
+      hideAllGates();
+      if (roleScreen) roleScreen.classList.remove("hidden");
+    };
+
+    document.getElementById("btnLogin").onclick = () => {
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value.trim();
+      const err = document.getElementById("loginErr");
+      if (u.length < 3 || p.length < 3) {
+        err.textContent = "Username & password must be at least 3 characters.";
+        return;
+      }
+      err.textContent = "";
+      localStorage.setItem("vs_user", u);
+      document.getElementById("userPillName").textContent = u;
+      if (!this.targetLang) showLangScreen();
+      else if (!this.role) showRoleScreen();
+      else enterApp();
+    };
+
+    // Language choice (only language buttons inside langScreen)
+    document.querySelectorAll("#langChoiceRow .lang-choice-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll("#langChoiceRow .lang-choice-btn").forEach(x => x.classList.remove("selected"));
+        b.classList.add("selected");
+        document.getElementById("btnLangConfirm").disabled = false;
+        document.getElementById("btnLangConfirm").dataset.pick = b.dataset.lang;
+      };
+    });
+    document.getElementById("btnLangConfirm").onclick = (e) => {
+      const pick = e.currentTarget.dataset.pick;
+      if (!pick) return;
+      this.targetLang = pick;
+      localStorage.setItem("vs_target_lang", pick);
+      if (!this.role) showRoleScreen();
+      else enterApp();
+    };
+
+    // Role choice
+    if (roleScreen) {
+      document.querySelectorAll("#roleScreen .lang-choice-btn").forEach(b => {
+        b.onclick = () => {
+          document.querySelectorAll("#roleScreen .lang-choice-btn").forEach(x => x.classList.remove("selected"));
+          b.classList.add("selected");
+          document.getElementById("btnRoleConfirm").disabled = false;
+          document.getElementById("btnRoleConfirm").dataset.role = b.dataset.role;
+        };
+      });
+      document.getElementById("btnRoleConfirm").onclick = (e) => {
+        const role = e.currentTarget.dataset.role;
+        if (!role) return;
+        this.role = role;
+        localStorage.setItem("vs_role", role);
+        enterApp();
+      };
+    }
+
+    document.getElementById("targetLangPill").onclick = () => {
+      appRoot.classList.add("hidden");
+      document.querySelectorAll("#langChoiceRow .lang-choice-btn").forEach(x => {
+        x.classList.toggle("selected", x.dataset.lang === this.targetLang);
+      });
+      document.getElementById("btnLangConfirm").disabled = !this.targetLang;
+      document.getElementById("btnLangConfirm").dataset.pick = this.targetLang || "";
+      showLangScreen();
+    };
+
+    document.getElementById("btnLogout").onclick = () => {
+      if (!confirm("Logout of VaniSetu.ai?")) return;
+      localStorage.removeItem("vs_user");
+      appRoot.classList.add("hidden");
+      if (roleScreen) roleScreen.classList.add("hidden");
+      langScreen.classList.add("hidden");
+      loginScreen.classList.remove("hidden");
+      document.getElementById("loginUser").value = "";
+      document.getElementById("loginPass").value = "";
+    };
+
+    if (savedUser) {
+      document.getElementById("loginUser").value = savedUser;
+      document.getElementById("userPillName").textContent = savedUser;
+      if (this.targetLang && this.role) {
+        enterApp();
+        return;
+      }
+      if (!this.targetLang) showLangScreen();
+      else showRoleScreen();
+    }
+  },
+
+  applyRoleUI() {
+    const isTeacher = this.role === "teacher";
+    // Show/hide nav items based on role
+    document.querySelectorAll(".nav-item, .mobile-nav button").forEach(btn => {
+      const step = +btn.dataset.step;
+      // Teacher-heavy steps: 5 (Teacher AI), 6 (Worksheets), 7 (Analytics)
+      // Student-heavy: 3,4,8,9,10
+      // Common: 1,2
+      if (!isTeacher && (step === 5 || step === 6)) {
+        btn.style.display = "none";
+      } else {
+        btn.style.display = "";
+      }
+    });
+    // Update topbar user pill
+    const pill = document.getElementById("userPillName");
+    if (pill) {
+      const name = localStorage.getItem("vs_user") || "User";
+      pill.textContent = (isTeacher ? "👩‍🏫 " : "🎒 ") + name;
+    }
+  },
+
+  setTargetLangUI(code) {
+    this.targetLang = code;
+    const meta = this.TARGET_LANG_META[code] || this.TARGET_LANG_META.sat;
+    const pill = document.getElementById("targetLangPill");
+    if (pill) pill.textContent = "🌐 " + meta.name.split(" ")[0];
+  },
+
+  bindSpeakMini(b) {
+    b.onclick = () => {
+      const code = b.getAttribute("data-speak") || (b.id === "btnSpeakTarget" ? (this.targetLang || "sat") : "hi");
+      const txt = this.lastOut[code] || "";
+      this.speakLang(code, txt);
+    };
+  },
+
+  /* ---- MOTHER-TONGUE KEYBOARDS ---- */
+  kbLang: "sat",
+  KB_CHARS: {
+    sat: [
+      "ᱚ","ᱟ","ᱤ","ᱩ","ᱮ","ᱳ","ᱚᱸ","ᱟᱹ","ᱤᱹ",
+      "ᱠ","ᱜ","ᱝ","ᱪ","ᱡ","ᱢ","ᱛ","ᱫ","ᱬ","ᱯ","ᱵ",
+      "ᱨ","ᱞ","ᱥ","ᱦ","ᱧ","ᱣ","ᱭ","ᱲ","ᱴ","ᱰ",
+      "᱑","᱒","᱓","᱔","᱕","᱖","᱗","᱘","᱙","᱐",
+      "᱾","᱿","ᱼ"," "
+    ],
+    ho: [
+      "a","ā","i","ī","u","ū","e","o","ñ","ṅ",
+      "k","g","c","j","t","d","n","p","b","m",
+      "r","l","s","h","y","w","ḍ","ṭ","ṛ",
+      "mi","baria","apia","ponia","pane",
+      "Johar","uli","dah","Sadu"," "
+    ],
+    mun: [
+      "a","ā","i","ī","u","ū","e","o","ñ","ṅ",
+      "k","g","c","j","t","d","n","p","b","m",
+      "r","l","s","h","y","w","ḍ","ṭ","ṛ","miḍ",
+      "Johar","yoe","diyang","Sadu","baria","apia"," "
+    ]
+  },
+  bindKeyboard() {
+    const panel = document.getElementById("kbPanel");
+    const toggle = document.getElementById("btnToggleKb");
+    const close = document.getElementById("btnKbClose");
+    if (!panel || !toggle) return;
+
+    toggle.onclick = () => {
+      panel.classList.toggle("hidden");
+      if (!panel.classList.contains("hidden")) this.renderKeyboard();
+    };
+    if (close) close.onclick = () => panel.classList.add("hidden");
+
+    document.querySelectorAll(".kb-lang-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".kb-lang-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.kbLang = b.dataset.kb;
+        this.renderKeyboard();
+      };
+    });
+
+    const space = document.getElementById("kbSpace");
+    const back = document.getElementById("kbBack");
+    const clr = document.getElementById("kbClear");
+    if (space) space.onclick = () => this.kbInsert(" ");
+    if (back) back.onclick = () => this.kbBackspace();
+    if (clr) clr.onclick = () => { document.getElementById("srcText").value = ""; };
+  },
+  renderKeyboard() {
+    const box = document.getElementById("kbKeys");
+    if (!box) return;
+    const chars = this.KB_CHARS[this.kbLang] || this.KB_CHARS.sat;
+    box.innerHTML = "";
+    chars.forEach(ch => {
+      if (ch === " ") return;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn btn-ghost";
+      b.style.cssText = "padding:8px 10px;min-width:40px;font-size:16px;font-weight:700";
+      b.textContent = ch;
+      b.onclick = () => this.kbInsert(ch);
+      box.appendChild(b);
+    });
+  },
+  kbInsert(ch) {
+    const ta = document.getElementById("srcText");
+    if (!ta) return;
+    const start = ta.selectionStart || ta.value.length;
+    const end = ta.selectionEnd || ta.value.length;
+    const v = ta.value;
+    ta.value = v.slice(0, start) + ch + v.slice(end);
+    ta.focus();
+    const pos = start + ch.length;
+    ta.setSelectionRange(pos, pos);
+  },
+  kbBackspace() {
+    const ta = document.getElementById("srcText");
+    if (!ta) return;
+    const start = ta.selectionStart || ta.value.length;
+    const end = ta.selectionEnd || ta.value.length;
+    if (start !== end) {
+      ta.value = ta.value.slice(0, start) + ta.value.slice(end);
+      ta.setSelectionRange(start, start);
+    } else if (start > 0) {
+      ta.value = ta.value.slice(0, start - 1) + ta.value.slice(start);
+      ta.setSelectionRange(start - 1, start - 1);
+    }
+    ta.focus();
+  },
+
+    go(n) {
+    this.step = n;
+    for (let i = 1; i <= 11; i++) {
+      const el = document.getElementById("step"+i);
+      if (el) el.classList.toggle("hidden", i !== n);
+    }
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", +b.dataset.step === n));
+    document.querySelectorAll(".mobile-nav button").forEach(b => b.classList.toggle("active", +b.dataset.step === n));
+    if (n === 9) this.renderKidsZone();
+    if (n === 11) this.renderStory();
+    window.scrollTo(0, 0);
+  },
+
+  toast(m) {
+    const t = document.getElementById("toast");
+    t.textContent = m; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  },
+
+  /* ---- TRANSLATE ALL ---- */
+  normalize(t) {
+    return (t || "").toLowerCase()
+      .replace(/[।.!?,,;:'"“”‘’]/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/\bcolour\b/g, "color")
+      .replace(/\blearnt\b/g, "learned")
+      .replace(/\btheatre\b/g, "theater")
+      .replace(/\borganise\b/g, "organize")
+      .replace(/\bfavourite\b/g, "favorite")
+      .replace(/\bkaise ho\b/g, "kaise hai")
+      .replace(/\bkaise hain\b/g, "kaise hai")
+      .replace(/\btheek hun\b/g, "theek hoon")
+      .replace(/\bmain theek\b/g, "main theek hoon")
+      .trim();
+  },
+
+  mapLang(code, raw) {
+    const dict = DICT[code] || {};
+    const original = (raw || "").trim();
+    if (!original) return { text: "—", hits: 0, total: 0, unknown: true };
+
+    // 1) exact match
+    if (dict[original]) return { text: dict[original], hits: 1, total: 1, unknown: false };
+
+    // 2) normalized exact
+    const n = this.normalize(original);
+    for (const [k, v] of Object.entries(dict)) {
+      if (this.normalize(k) === n) return { text: v, hits: 1, total: 1, unknown: false };
+    }
+
+    // 3) phrase contains (prefer longer keys)
+    let bestPhrase = null, bestLen = 0;
+    for (const [k, v] of Object.entries(dict)) {
+      const nk = this.normalize(k);
+      if (nk.length > 4 && (n.includes(nk) || nk.includes(n)) && nk.length > bestLen) {
+        bestPhrase = v; bestLen = nk.length;
+      }
+    }
+    if (bestPhrase) return { text: bestPhrase, hits: 1, total: 1, unknown: false };
+
+    // 4) word-level replace (longest keys first)
+    const w = WORD[code] || {};
+    let r = original;
+    let hits = 0;
+    const keys = Object.keys(w).sort((a, b) => b.length - a.length);
+    for (const h of keys) {
+      if (!h) continue;
+      const re = new RegExp(h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+      if (re.test(r)) {
+        r = r.replace(re, w[h] || "");
+        hits++;
+      }
+    }
+    r = r.replace(/\s+/g, " ").trim();
+    const totalWords = original.split(/\s+/).filter(Boolean).length;
+    if (hits > 0 && r && r !== original) {
+      return { text: r, hits, total: totalWords, unknown: false };
+    }
+
+    // 5) honest unknown — do NOT invent same text
+    return {
+      text: "— not in offline dictionary —",
+      hits: 0,
+      total: totalWords,
+      unknown: true,
+      original
+    };
+  },
+
+  mapLangText(code, raw) {
+    const res = this.mapLang(code, raw);
+    return typeof res === "string" ? res : res.text;
+  },
+
+  EMOJI_MAP: [
+    { k: ["एक","one","1"], e: "1️⃣" }, { k: ["दो","two","2"], e: "2️⃣" },
+    { k: ["तीन","three","3"], e: "3️⃣" }, { k: ["चार","four","4"], e: "4️⃣" },
+    { k: ["पाँच","five","5"], e: "5️⃣" },
+    { k: ["आम","mango"], e: "🥭" }, { k: ["पानी","water"], e: "💧" },
+    { k: ["स्कूल","school"], e: "🏫" }, { k: ["धन्यवाद","thank"], e: "🙏" },
+    { k: ["नमस्ते","नमस्कार","hello","namaste","johar"], e: "👋" },
+    { k: ["शुभ प्रभात","good morning"], e: "🌅" },
+    { k: ["बैठ","sit"], e: "🪑" }, { k: ["गिनती","count"], e: "🔢" }
+  ],
+  getVisualEmoji(text) {
+    const n = this.normalize(text);
+    for (const row of this.EMOJI_MAP) {
+      if (row.k.some(k => n.includes(this.normalize(k)))) return row.e;
+    }
+    return "🗣️";
+  },
+
+  getRomanFor(code, text) {
+    if (!text || text.startsWith("—")) return "";
+    const map = ROMAN[code] || {};
+    let out = text;
+    for (const [ol, ro] of Object.entries(map)) {
+      if (out.includes(ol)) out = out.split(ol).join(ro);
+    }
+    // strip remaining Ol Chiki
+    out = out.replace(/[\u1C50-\u1C7F]/g, " ").replace(/\s+/g, " ").trim();
+    return out || "";
+  },
+
+  async translate() {
+    const text = document.getElementById("srcText").value.trim();
+    if (!text) { this.toast(t("toast_type_first")); return; }
+    const status = document.getElementById("statusLine");
+    status.textContent = t("status_translating");
+    const btn = document.getElementById("btnTranslate");
+    if (btn) { btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    // 1) Offline dictionary first (always works without internet)
+    const offlineResults = {};
+    let totalHits = 0;
+    ["sat", "ho", "mun"].forEach(code => {
+      const res = this.mapLang(code, text);
+      offlineResults[code] = res;
+      totalHits += res.hits || 0;
+    });
+
+    let usedOnline = false;
+    let onlineHi = null;
+    let onlineEn = null;
+
+    // 2) Always try online when available for maximum coverage (any world language)
+    //    Offline remains the high-accuracy classroom layer.
+    if (navigator.onLine) {
+      status.textContent = "Online · detecting language & bridging…";
+      try {
+        const bridged = await this.onlineBridge(text);
+        if (bridged && (bridged.en || bridged.hi)) {
+          usedOnline = true;
+          onlineHi = bridged.hi || null;
+          onlineEn = bridged.en || null;
+          const bridgeCandidates = [bridged.hi, bridged.en, text].filter(Boolean);
+
+          ["sat", "ho", "mun"].forEach(code => {
+            let best = offlineResults[code];
+            for (const cand of bridgeCandidates) {
+              const res = this.mapLang(code, cand);
+              if (!best || (res.hits || 0) > (best.hits || 0) || (best.unknown && !res.unknown)) {
+                best = res;
+              }
+            }
+            offlineResults[code] = best;
+          });
+          totalHits = ["sat","ho","mun"].reduce((s,c) => s + (offlineResults[c].hits || 0), 0);
+        }
+      } catch (e) {
+        console.warn("Online bridge error", e);
+      }
+    }
+
+    // Final outputs — never put the same text in all three tribal boxes
+    const cleanTribal = (res, code) => {
+      if (!res || res.unknown) {
+        return { text: "—", unknown: true };
+      }
+      // Prevent online error strings from leaking
+      const t = (res.text || "").trim();
+      if (!t || t.includes("please select two distinct") || t.includes("not in offline")) {
+        return { text: "—", unknown: true };
+      }
+      return res;
+    };
+
+    const satR = cleanTribal(offlineResults.sat, "sat");
+    const hoR  = cleanTribal(offlineResults.ho, "ho");
+    const munR = cleanTribal(offlineResults.mun, "mun");
+
+    this.lastOut.sat = satR.unknown ? "" : satR.text;
+    this.lastOut.ho  = hoR.unknown  ? "" : hoR.text;
+    this.lastOut.mun = munR.unknown ? "" : munR.text;
+    this.lastOut.hi  = onlineHi || text;
+
+    const makeHelpful = (res, code) => {
+      if (!res.unknown && res.text && res.text !== "—") return res.text;
+      if (onlineHi && onlineHi !== text) {
+        return `📖 See Hindi →`;
+      }
+      return "— not in dictionary yet —";
+    };
+
+    document.getElementById("outSat").textContent = makeHelpful(satR, "sat");
+    document.getElementById("outSatRo").textContent = satR.unknown ? "" :
+      (this.getRomanFor("sat", satR.text) ? "Roman: " + this.getRomanFor("sat", satR.text) : "");
+    document.getElementById("outHo").textContent  = makeHelpful(hoR, "ho");
+    document.getElementById("outMun").textContent = makeHelpful(munR, "mun");
+    document.getElementById("outHi").textContent  = this.lastOut.hi || text;
+
+    const tribalMap = { Sat: satR, Ho: hoR, Mun: munR };
+    ["Sat","Ho","Mun"].forEach(L => {
+      const el = document.getElementById("out" + L);
+      const res = tribalMap[L];
+      if (res && res.unknown) {
+        el.style.opacity = "0.7";
+        el.style.fontStyle = "italic";
+      } else {
+        el.style.opacity = "1";
+        el.style.fontStyle = "normal";
+      }
+    });
+
+    this.prog.d.trans++;
+    this.prog.save();
+
+    const goodHits = [satR, hoR, munR].filter(r => !r.unknown).length;
+    if (goodHits > 0) {
+      status.textContent = `Done · ${goodHits}/3 tribal match · ${usedOnline ? "Online+Offline" : "Offline"}`;
+      this.toast("Translated successfully");
+    } else if (usedOnline && onlineHi) {
+      status.textContent = "Done · Hindi ready · tribal dictionary miss (try common classroom words)";
+      this.toast("Hindi translated. Tribal words not in dictionary yet.");
+    } else {
+      status.textContent = "Done · try words like: namaste, one, water, mango, school…";
+      this.toast("No strong match — try classroom words or check internet");
+    }
+
+    if (btn) { btn.disabled = false; btn.style.opacity = "1"; }
+    this.renderOutput();
+  },
+
+  /* Stronger online bridge: any language → English + Hindi.
+     Uses MyMemory + Lingva (Google-proxy) fallbacks. No API key needed. */
+  async onlineBridge(text) {
+    const raw = String(text || "").trim().slice(0, 400);
+    if (!raw) return { en: "", hi: "" };
+
+    const isBad = (t) => {
+      if (!t || typeof t !== "string") return true;
+      const s = t.trim().toLowerCase();
+      if (s.length < 1) return true;
+      if (s === raw.toLowerCase()) return true;
+      // Common API error / junk responses
+      if (s.includes("please select two distinct")) return true;
+      if (s.includes("invalid language")) return true;
+      if (s.includes("query length")) return true;
+      if (s.includes("language pair")) return true;
+      if (s.includes("error")) return true;
+      if (s.includes("not supported")) return true;
+      if (s.startsWith("my memory")) return true;
+      return false;
+    };
+
+    const tryMyMemory = async (pair) => {
+      try {
+        const q = encodeURIComponent(raw);
+        const url = `https://api.mymemory.translated.net/get?q=${q}&langpair=${pair}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(7000) });
+        if (!res.ok) return "";
+        const json = await res.json();
+        const t = (json && json.responseData && json.responseData.translatedText) || "";
+        return isBad(t) ? "" : t.trim();
+      } catch (_) { return ""; }
+    };
+
+    // Lingva — avoid pure "auto" when possible (causes "select two distinct languages")
+    const tryLingva = async (source, target) => {
+      const instances = [
+        "https://lingva.ml",
+        "https://lingva.garudalinux.org",
+        "https://translate.plausibility.cloud"
+      ];
+      for (const base of instances) {
+        try {
+          const url = `${base}/api/v1/${source}/${target}/${encodeURIComponent(raw)}`;
+          const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+          if (!res.ok) continue;
+          const json = await res.json();
+          const t = (json && json.translation) ? json.translation.trim() : "";
+          if (!isBad(t)) return t;
+        } catch (_) {}
+      }
+      return "";
+    };
+
+    // Detect if input looks Hindi / English to pick better pairs
+    const hasDevanagari = /[\u0900-\u097F]/.test(raw);
+    const looksEnglish = /^[a-zA-Z0-9\s.,!?'"\-]+$/.test(raw);
+
+    const tasks = [];
+    // Always try MyMemory with sensible pairs
+    tasks.push(tryMyMemory(hasDevanagari ? "hi|en" : "en|hi"));
+    tasks.push(tryMyMemory("autodetect|en"));
+    tasks.push(tryMyMemory("autodetect|hi"));
+    // Lingva with concrete source when possible
+    if (hasDevanagari) {
+      tasks.push(tryLingva("hi", "en"));
+      tasks.push(tryLingva("hi", "hi")); // identity sometimes useful
+    } else if (looksEnglish) {
+      tasks.push(tryLingva("en", "hi"));
+      tasks.push(tryLingva("en", "en"));
+    } else {
+      tasks.push(tryLingva("auto", "en"));
+      tasks.push(tryLingva("auto", "hi"));
+    }
+
+    const results = await Promise.all(tasks);
+    const good = results.filter(r => r && !isBad(r));
+
+    let en = "", hi = "";
+    // Prefer Hindi-looking result for hi, English-looking for en
+    for (const r of good) {
+      if (!hi && /[\u0900-\u097F]/.test(r)) hi = r;
+      if (!en && /^[a-zA-Z0-9\s.,!?'"\-]+$/.test(r) && r.length > 1) en = r;
+    }
+    // Fallbacks
+    if (!en) en = good.find(r => !/[\u0900-\u097F]/.test(r)) || "";
+    if (!hi) hi = good.find(r => /[\u0900-\u097F]/.test(r)) || en || "";
+
+    // Last resort: if input was already Hindi, keep it
+    if (!hi && hasDevanagari) hi = raw;
+    if (!en && looksEnglish) en = raw;
+
+    return { en: en || raw, hi: hi || en || raw };
+  },
+
+  /* Show Text / Voice / Visual */
+  renderOutput() {
+    const lang = this.targetLang || "sat";
+    const meta = this.TARGET_LANG_META[lang] || this.TARGET_LANG_META.sat;
+    const textBox = document.getElementById("langOut");
+    const voiceBox = document.getElementById("voiceOut");
+    const visualBox = document.getElementById("visualOut");
+    const voiceCtrl = document.getElementById("voiceControls");
+
+    textBox.classList.toggle("hidden", this.outputMode !== "text");
+    voiceBox.classList.toggle("hidden", this.outputMode !== "voice");
+    visualBox.classList.toggle("hidden", this.outputMode !== "visual");
+    if (voiceCtrl) voiceCtrl.classList.toggle("hidden", this.outputMode !== "voice");
+
+    if (this.outputMode === "voice") {
+      const txt = this.lastOut[lang] || this.lastOut.sat || "—";
+      document.getElementById("voiceOutLabel").textContent = t("s1_voice_playing").replace("{lang}", meta.name.split(" ")[0]);
+      document.getElementById("voiceOutText").textContent = txt;
+      if (txt && !txt.startsWith("—")) this.speakLang(lang, txt);
+    }
+    if (this.outputMode === "visual") {
+      const srcText = document.getElementById("srcText").value.trim();
+      document.getElementById("viIcon").textContent = this.getVisualEmoji(srcText);
+      document.getElementById("viWord").textContent = this.lastOut[lang] || this.lastOut.sat || "—";
+      document.getElementById("viHi").textContent = this.lastOut.hi || "—";
+    }
+  },
+
+    /* Voice profiles — user selectable clarity modes */
+  VOICE_PROFILES: {
+    sat: { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.74, pitch: 1.15 },
+    ho:  { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.80, pitch: 0.90 },
+    mun: { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.78, pitch: 1.05 },
+    gon: { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.82, pitch: 0.85 },
+    kru: { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.80, pitch: 1.00 },
+    en:  { langPrefs: ["en-IN", "en-GB", "en"], rate: 0.90, pitch: 1.00 },
+    hi:  { langPrefs: ["hi-IN", "en-IN", "en"], rate: 0.85, pitch: 1.00 }
+  },
+  CLARITY_PROFILES: {
+    clear:   { rateMul: 0.78, pitchMul: 1.00, label: "Slow & Clear" },
+    natural: { rateMul: 0.92, pitchMul: 1.00, label: "Natural" },
+    child:   { rateMul: 0.85, pitchMul: 1.12, label: "Child-friendly" },
+    teacher: { rateMul: 0.88, pitchMul: 0.95, label: "Teacher" },
+    slowest: { rateMul: 0.65, pitchMul: 1.00, label: "Slowest" }
+  },
+  voiceProfile: "clear",
+  selectedVoiceURI: null,
+
+  langDisplayName(code) {
+    const map = { sat: t("lang_name_sat"), ho: t("lang_name_ho"), mun: t("lang_name_mun"), en: t("lang_name_en"), hi: t("lang_hi_name") };
+    return map[code] || code.toUpperCase();
+  },
+
+  populateVoiceSelect() {
+    const sel = document.getElementById("voiceSelect");
+    if (!sel || !window.speechSynthesis) return;
+    const voices = speechSynthesis.getVoices();
+    sel.innerHTML = "";
+    // Prefer Indian voices first
+    const sorted = [...voices].sort((a, b) => {
+      const score = (v) => {
+        const l = (v.lang || "").toLowerCase();
+        if (l.startsWith("hi")) return 0;
+        if (l.startsWith("en-in")) return 1;
+        if (l.startsWith("en")) return 2;
+        return 3;
+      };
+      return score(a) - score(b);
+    });
+    sorted.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v.voiceURI;
+      opt.textContent = `${v.name} (${v.lang})`;
+      sel.appendChild(opt);
+    });
+    if (this.selectedVoiceURI) {
+      sel.value = this.selectedVoiceURI;
+    } else if (sorted.length) {
+      this.selectedVoiceURI = sorted[0].voiceURI;
+      sel.value = this.selectedVoiceURI;
+    }
+    sel.onchange = () => { this.selectedVoiceURI = sel.value; };
+  },
+
+  speakLang(code, text) {
+    let say = text;
+    if (!say || say.startsWith("—")) { this.toast(t("toast_nothing_speak")); return; }
+    // Prefer Roman for Ol Chiki
+    if (/[\u1C50-\u1C7F]/.test(say)) {
+      const map = ROMAN[code] || ROMAN.sat || {};
+      for (const [ol, ro] of Object.entries(map)) {
+        if (say.includes(ol)) say = say.split(ol).join(ro);
+      }
+      say = say.replace(/[\u1C50-\u1C7F]/g, " ").replace(/\s+/g, " ").trim();
+    }
+    // Known phrase audio hints
+    const audioHint = {
+      sat: { "johar": "johar ched leka menama", "ᱡᱚᱦᱟᱨ": "johar" },
+      ho:  { "Johar": "johar chia leka menama", "chia": "chia leka menama" },
+      mun: { "Johar": "johar che leka menama" }
+    };
+    const hints = audioHint[code] || {};
+    for (const [k, v] of Object.entries(hints)) {
+      if (text.includes(k) || say.toLowerCase().includes(k.toLowerCase())) {
+        say = v; break;
+      }
+    }
+    if (!say || say.length < 2) say = text.replace(/[\u1C50-\u1C7F]/g, "").trim() || "johar";
+    this.speak(say, code);
+  },
+
+  /* ---- SPEECH with clarity profiles + user voice choice ---- */
+  speak(text, code) {
+    if (!text || text === "—" || text.startsWith("—")) { this.toast(t("toast_nothing_speak")); return; }
+    if (!window.speechSynthesis) { this.toast(t("toast_no_speech")); return; }
+
+    let say = text;
+    if (/[\u1C50-\u1C7F]/.test(say)) {
+      const m = say.match(/\(([^)]+)\)/) || say.match(/·\s*([a-zA-Zôṇḍṛṭṣñāīūēō\s\/\-]+)/);
+      if (m) say = m[1].trim();
+      else {
+        for (const map of Object.values(ROMAN)) {
+          for (const [ol, ro] of Object.entries(map)) {
+            if (say.includes(ol)) { say = ro; break; }
+          }
+        }
+        say = say.replace(/[\u1C50-\u1C7F]/g, " ").replace(/\s+/g, " ").trim() || "mid";
+      }
+    }
+
+    const base = this.VOICE_PROFILES[code] || this.VOICE_PROFILES.hi;
+    const clarity = this.CLARITY_PROFILES[this.voiceProfile] || this.CLARITY_PROFILES.clear;
+    const u = new SpeechSynthesisUtterance(say);
+    u.lang = base.langPrefs[0];
+    u.rate = Math.max(0.5, Math.min(1.2, base.rate * clarity.rateMul));
+    u.pitch = Math.max(0.5, Math.min(1.5, base.pitch * clarity.pitchMul));
+    u.volume = 1;
+
+    const voices = speechSynthesis.getVoices();
+    let v = null;
+    if (this.selectedVoiceURI) {
+      v = voices.find(x => x.voiceURI === this.selectedVoiceURI);
+    }
+    if (!v) {
+      for (const pref of base.langPrefs) {
+        v = voices.find(x => x.lang.toLowerCase().startsWith(pref.toLowerCase()));
+        if (v) break;
+      }
+    }
+    if (!v) v = voices[0];
+    if (v) u.voice = v;
+
+    let started = false;
+    const langLabel = code ? this.langDisplayName(code) : "";
+    u.onstart = () => { started = true; this.toast(langLabel ? `🔊 ${langLabel} · ${clarity.label}` : t("toast_playing")); };
+    u.onerror = () => this.toast(t("toast_audio_blocked"));
+    speechSynthesis.cancel();
+    setTimeout(() => {
+      speechSynthesis.speak(u);
+      setTimeout(() => { if (!started) this.toast(t("toast_no_sound")); }, 1200);
+    }, 50);
+  },
+
+    mic() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      this.toast("Speech not supported. Use Chrome/Edge browser.");
+      return;
+    }
+
+    // Already listening? → stop and use whatever we have
+    if (this._recog) {
+      try { this._recog.stop(); } catch(_) {}
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      this.toast("Mic needs HTTPS (or localhost). Open this page over https:// to use speech input.");
+      return;
+    }
+
+    // Explicitly request mic permission first. On many browsers/devices,
+    // SpeechRecognition's own permission prompt fails silently unless the
+    // page has already been granted mic access via getUserMedia().
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          stream.getTracks().forEach(tr => tr.stop());
+          this._startMicRecognition(SR);
+        })
+        .catch((err) => {
+          console.warn("[VaniSetu] getUserMedia failed", err);
+          this.toast("Mic permission blocked. Address bar → 🔒 → Allow Microphone, then try again.");
+        });
+    } else {
+      this._startMicRecognition(SR);
+    }
+  },
+
+  _startMicRecognition(SR) {
+
+    const btn = document.getElementById("btnMic");
+    const box = document.getElementById("srcText");
+    const originalBtn = btn ? btn.innerHTML : "🎤 Speech input";
+
+    const setListeningUI = (on) => {
+      if (!btn) return;
+      if (on) {
+        btn.innerHTML = "🔴 Stop listening";
+        btn.style.background = "#dc2626";
+        btn.style.color = "#fff";
+      } else {
+        btn.innerHTML = originalBtn;
+        btn.style.background = "";
+        btn.style.color = "";
+        btn.disabled = false;
+      }
+    };
+
+    // Try Hindi first, fallback English
+    const langsToTry = (this.srcLang === "en") ? ["en-IN", "en-US", "hi-IN"] : ["hi-IN", "en-IN", "en-US"];
+    let langIndex = 0;
+    let finalTranscript = "";
+    let anyResult = false;
+
+    const startRecog = (lang) => {
+      const r = new SR();
+      this._recog = r;
+      r.lang = lang;
+      r.interimResults = true;
+      r.maxAlternatives = 1;
+      r.continuous = true;   // keep listening until user stops or silence
+
+      r.onstart = () => {
+        setListeningUI(true);
+        this.toast("🎤 Listening (" + lang + ")… Bol do, phir Stop dabaao");
+        console.log("[VaniSetu] Speech started with lang:", lang);
+      };
+
+      r.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript || "";
+          if (e.results[i].isFinal) {
+            finalTranscript += (finalTranscript ? " " : "") + t;
+            anyResult = true;
+          } else {
+            interim += t;
+          }
+        }
+        // ALWAYS update the text box live
+        if (box) {
+          const show = (finalTranscript + (interim ? " " + interim : "")).trim();
+          box.value = show;
+          // force UI refresh
+          box.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        console.log("[VaniSetu] Speech result:", finalTranscript || interim);
+      };
+
+      r.onerror = (e) => {
+        const err = e.error || "unknown";
+        console.warn("[VaniSetu] Speech error:", err, e);
+        if (err === "not-allowed" || err === "service-not-allowed") {
+          this.toast("Mic permission blocked. Address bar → 🔒 → Allow Microphone");
+          cleanup();
+        } else if (err === "network") {
+          this.toast("Internet chahiye speech ke liye (Chrome Google servers use karta hai)");
+          cleanup();
+        } else if (err === "no-speech") {
+          // try next language once
+          if (langIndex < langsToTry.length - 1) {
+            langIndex++;
+            try { r.stop(); } catch(_) {}
+            setTimeout(() => startRecog(langsToTry[langIndex]), 300);
+            return;
+          }
+          this.toast("Kuch suna nahi. Mic ke paas se clearly bolo.");
+        } else if (err === "aborted") {
+          // user or we stopped it – normal
+        } else {
+          this.toast("Mic error: " + err);
+        }
+      };
+
+      r.onend = () => {
+        console.log("[VaniSetu] Speech ended. Final:", finalTranscript);
+        // If we got something, use it
+        if (finalTranscript.trim()) {
+          if (box) box.value = finalTranscript.trim();
+          this.toast("✅ Got: " + finalTranscript.trim().slice(0, 50));
+          cleanup();
+          setTimeout(() => this.translate(), 300);
+        } else if (this._recog === r) {
+          // ended without result and not intentionally stopped
+          cleanup();
+          if (!anyResult) {
+            this.toast("Text nahi aaya. Chrome use karo + mic permission Allow + clearly bolo.");
+          }
+        }
+      };
+
+      try {
+        r.start();
+      } catch (err) {
+        console.error("[VaniSetu] start() failed", err);
+        this.toast("Mic start nahi hua. Chrome + HTTPS/localhost use karo.");
+        cleanup();
+      }
+    };
+
+    const cleanup = () => {
+      this._recog = null;
+      setListeningUI(false);
+    };
+
+    // Clear old text so user sees fresh input
+    if (box) box.value = "";
+    startRecog(langsToTry[0]);
+
+    // Auto-stop after 12 seconds safety
+    setTimeout(() => {
+      if (this._recog) {
+        try { this._recog.stop(); } catch(_) {}
+      }
+    }, 12000);
+  },
+
+  /* ---- CHART ---- */
+  chartLang: "sat",
+  flashLang: "sat",
+  buildChart(lang) {
+    this.chartLang = lang || this.chartLang || "sat";
+    const g = document.getElementById("chartGrid");
+    g.innerHTML = "";
+    const nameKey = { sat: "lang_name_sat", ho: "lang_name_ho", mun: "lang_name_mun", en: "lang_name_en" }[this.chartLang] || "lang_name_sat";
+    CHART.forEach(c => {
+      const word = c[this.chartLang] || c.sat;
+      let roman = word;
+      if (this.chartLang === "sat") roman = c.ro;
+      else if (this.chartLang === "en") roman = c.en;
+      else if (this.chartLang === "ho") roman = c.ho;
+      else if (this.chartLang === "mun") roman = c.mun;
+      const d = document.createElement("div");
+      d.className = "chart-item";
+      d.innerHTML = `<div class="num">${c.v}</div>
+        <div class="hi">${c.hi}</div>
+        <div class="tr">${word}</div>
+        <div class="ro">${roman} · ${t(nameKey)}</div>`;
+      d.onclick = () => this.speak(roman, this.chartLang);
+      g.appendChild(d);
+    });
+  },
+  bindChartLangPicker() {
+    document.querySelectorAll(".chart-lang-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".chart-lang-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.buildChart(b.dataset.lang);
+      };
+    });
+  },
+
+  /* ---- FLASH ---- */
+  bindFlash() {
+    document.getElementById("fNext").onclick = () => this.flash(1);
+    document.getElementById("fPrev").onclick = () => this.flash(-1);
+    document.getElementById("fSpeak").onclick = () => {
+      const c = FLASH[this.fi];
+      if (this.flashLang === "en") this.speak(c.en, "en");
+      else if (this.flashLang === "ho") this.speak(c.ho || c.ro, "ho");
+      else if (this.flashLang === "mun") this.speak(c.mun || c.ro, "mun");
+      else this.speak(c.ro || c.hi, "sat");
+    };
+    this.renderFlash();
+  },
+  bindFlashLangPicker() {
+    document.querySelectorAll(".flash-lang-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".flash-lang-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.flashLang = b.dataset.lang;
+        this.renderFlash();
+      };
+    });
+  },
+  flash(d) {
+    this.fi = (this.fi + d + FLASH.length) % FLASH.length;
+    this.prog.d.flash++; this.prog.save();
+    this.renderFlash();
+  },
+  renderFlash() {
+    const c = FLASH[this.fi];
+    document.getElementById("fVisual").textContent = c.v;
+    document.getElementById("fHi").textContent = c.hi;
+    if (this.flashLang === "en") {
+      document.getElementById("fTr").textContent = (c.en || "") + " · English";
+      document.getElementById("fRo").textContent = c.en || "";
+    } else if (this.flashLang === "ho") {
+      document.getElementById("fTr").textContent = (c.ho || "") + " · Ho";
+      document.getElementById("fRo").textContent = c.ho || c.ro || "";
+    } else if (this.flashLang === "mun") {
+      document.getElementById("fTr").textContent = (c.mun || "") + " · Mundari";
+      document.getElementById("fRo").textContent = c.mun || c.ro || "";
+    } else {
+      document.getElementById("fTr").textContent = c.tr;
+      document.getElementById("fRo").textContent = c.ro;
+    }
+    document.getElementById("fProg").textContent = `${this.fi+1} / ${FLASH.length}`;
+    document.getElementById("fBar").style.width = ((this.fi+1)/FLASH.length*100) + "%";
+  },
+
+  /* ---- QUIZ ---- */
+  loadQuiz() {
+    const day = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0))/86400000);
+    this.quiz = QUIZ_BANKS[day % QUIZ_BANKS.length];
+    document.getElementById("qBadge").textContent = t("s4_daily_label") + " · " + new Date().toLocaleDateString();
+    this.renderQuiz();
+  },
+  renderQuiz() {
+    const box = document.getElementById("qOpts");
+    const feed = document.getElementById("qFeed");
+    box.innerHTML = ""; feed.textContent = "";
+    if (this.qi >= this.quiz.length) {
+      document.getElementById("qProg").textContent = t("s4_done");
+      document.getElementById("qText").textContent = t("s4_score").replace("{s}", this.qs).replace("{n}", this.quiz.length);
+      this.prog.d.attempts++;
+      if (this.qs === this.quiz.length) this.prog.d.correct++;
+      this.prog.save(); this.updateStats();
+      const b = document.createElement("button");
+      b.className = "btn btn-ghost"; b.textContent = t("s4_restart");
+      b.style.gridColumn = "1 / -1";
+      b.onclick = () => { this.qi = 0; this.qs = 0; this.renderQuiz(); };
+      box.appendChild(b);
+      return;
+    }
+    const q = this.quiz[this.qi];
+    document.getElementById("qProg").textContent = t("s4_q_progress").replace("{i}", this.qi+1).replace("{n}", this.quiz.length);
+    document.getElementById("qText").textContent = q.q;
+    q.o.forEach((opt, i) => {
+      const b = document.createElement("button");
+      b.className = "quiz-opt"; b.textContent = opt;
+      b.onclick = () => {
+        document.querySelectorAll("#qOpts .quiz-opt").forEach(x => x.disabled = true);
+        if (i === q.c) {
+          this.qs++; feed.textContent = t("s4_correct"); feed.style.color = "#4ade80";
+          document.getElementById("qBar").style.width = ((this.qi+1)/this.quiz.length*100)+"%";
+          setTimeout(() => { this.qi++; this.renderQuiz(); }, 800);
+        } else {
+          feed.textContent = t("s4_wrong"); feed.style.color = "#fca5a5";
+          const retryRow = document.createElement("div");
+          retryRow.style.cssText = "display:flex;gap:10px;justify-content:center;margin-top:12px;grid-column:1 / -1";
+          const retryBtn = document.createElement("button");
+          retryBtn.className = "btn btn-primary"; retryBtn.textContent = t("s4_try_same");
+          retryBtn.onclick = () => this.renderQuiz();
+          const skipBtn = document.createElement("button");
+          skipBtn.className = "btn btn-ghost"; skipBtn.textContent = t("s4_skip");
+          skipBtn.onclick = () => { this.qi++; this.renderQuiz(); };
+          retryRow.appendChild(retryBtn); retryRow.appendChild(skipBtn);
+          box.appendChild(retryRow);
+        }
+      };
+      box.appendChild(b);
+    });
+  },
+
+  /* ---- TEACHER ---- */
+  bindAssist() {
+    const row = document.getElementById("presets");
+    PRESETS.forEach(p => {
+      const b = document.createElement("button");
+      b.className = "preset"; b.textContent = p.length > 32 ? p.slice(0,30)+"…" : p;
+      b.onclick = () => { document.getElementById("assistIn").value = p; this.runAssist(); };
+      row.appendChild(b);
+    });
+    document.getElementById("btnAssist").onclick = () => this.runAssist();
+  },
+  runAssist() {
+    const p = document.getElementById("assistIn").value.trim().toLowerCase();
+    const out = document.getElementById("assistOut");
+    if (!p) { out.textContent = t("s5_out_empty"); return; }
+
+    if (p.includes("count") || p.includes("1") || p.includes("pebble") || p.includes("संख्या")) {
+      out.textContent =
+`👩‍🏫 5-minute Counting Plan (Santhali first)
+
+1. Warm-up (1 min)
+   Greet: ᱡᱚᱦᱟᱨ (Johar)! Children reply the same.
+
+2. Mother-tongue input (2 min)
+   Show pebbles. Say only Santhali first:
+   1 ᱢᱤᱫ (mid) · 2 ᱵᱟᱹᱨ (bar) · 3 ᱯᱮ (pe)
+   4 ᱯᱳᱱ (pon) · 5 ᱢᱚᱬᱮ (môṇe)
+
+3. Children touch & say (1 min)
+   Each child counts aloud in Santhali.
+
+4. Bridge to Hindi (1 min)
+   Same objects: एक दो तीन चार पाँच
+   Order is always tribal → Hindi.
+
+5. Exit ticket
+   “Show me 3” → child says pe / तीन.
+
+Tip: Never start with Hindi. Mother tongue stays the entry point — this is the core of PALASH MTB-MLE.`;
+    } else if (p.includes("mango") || p.includes("आम") || p.includes("vocab")) {
+      out.textContent =
+`🥭 Local object vocabulary
+
+Santhali: ᱟᱢ (ul)
+Ho: uli
+Mundari: yoe
+
+Activity:
+• Show real mango or picture
+• Children say ul / uli / yoe first
+• Then Hindi आम
+• Matching: picture ↔ Ol Chiki ↔ Hindi`;
+    } else if (p.includes("correct") || p.includes("pronun")) {
+      out.textContent =
+`🔊 Gentle correction
+
+1. Never say “wrong”. Model the tribal form again.
+2. Choral repeat 3 times with gesture.
+3. Praise in mother tongue: ᱟᱹᱰᱤ ᱵᱮᱥ!
+4. Goal = confidence, not perfection on day one.`;
+    } else {
+      out.textContent =
+`🎯 Generic mother-tongue bridge (5 min)
+
+Topic: "${document.getElementById("assistIn").value}"
+
+1. Show real object / picture
+2. Name in Santhali / Ho / Mundari FIRST
+3. Children chorus
+4. Bridge to Hindi
+5. Quick pair practice or flashcard
+
+Always keep the home language as the door into the lesson.`;
+    }
+  },
+
+  /* ---- STUDENT DOUBT SOLVER (step 8) — tutor-style, not keyword bingo ---- */
+  doubtHistory: [],
+  bindStudentAssist() {
+    const row = document.getElementById("studentPresets");
+    if (!row) return;
+    const presetKeys = ["s8_p1", "s8_p2", "s8_p3", "s8_p4", "s8_p5", "s8_p6"];
+    row.innerHTML = "";
+    presetKeys.forEach(k => {
+      const b = document.createElement("button");
+      b.className = "preset";
+      b.textContent = t(k);
+      b.dataset.i18n = k;
+      b.onclick = () => { document.getElementById("studentIn").value = t(k); this.runStudentAssist(); };
+      row.appendChild(b);
+    });
+    document.getElementById("btnStudentAssist").onclick = () => this.runStudentAssist();
+    const speakBtn = document.getElementById("btnStudentSpeak");
+    if (speakBtn) speakBtn.onclick = () => {
+      if (!this.lastDoubtReply) { this.toast(t("toast_nothing_speak")); return; }
+      this.speak(this.lastDoubtReply, "hi");
+    };
+    const clearBtn = document.getElementById("btnStudentClear");
+    if (clearBtn) clearBtn.onclick = () => this.resetDoubtChat();
+    const box = document.getElementById("studentIn");
+    if (box) {
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          this.runStudentAssist();
+        }
+      });
+    }
+  },
+  resetDoubtChat() {
+    this.doubtHistory = [];
+    this.lastDoubtReply = "";
+    const thread = document.getElementById("doubtThread");
+    if (!thread) return;
+    thread.innerHTML = `<div class="doubt-msg bot" id="doubtWelcome"><div class="who">Vani</div><div>${t("s8_out_default")}</div></div>`;
+    document.getElementById("studentIn").value = "";
+  },
+  appendDoubtMsg(role, text, thinking) {
+    const thread = document.getElementById("doubtThread");
+    if (!thread) return null;
+    const el = document.createElement("div");
+    el.className = "doubt-msg " + role + (thinking ? " doubt-thinking" : "");
+    el.innerHTML = `<div class="who">${role === "user" ? "You" : "Vani"}</div><div class="body"></div>`;
+    el.querySelector(".body").textContent = text;
+    thread.appendChild(el);
+    thread.scrollTop = thread.scrollHeight;
+    return el;
+  },
+  /* Classroom facts the tutor can actually use (not slogans). */
+  TUTOR_LEXICON: [
+    { hi: "एक", en: "one", sat: "ᱢᱤᱫ", satRo: "mid", ho: "mi", mun: "miḍ", hint: "Hold up 1 finger. Say mid, then एक." },
+    { hi: "दो", en: "two", sat: "ᱵᱟᱹᱨ", satRo: "bar", ho: "baria", mun: "baria", hint: "Two pebbles. Say bar, then दो." },
+    { hi: "तीन", en: "three", sat: "ᱯᱮ", satRo: "pe", ho: "apia", mun: "apia", hint: "Three fingers. Say pe, then तीन." },
+    { hi: "चार", en: "four", sat: "ᱯᱳᱱ", satRo: "pon", ho: "ponia", mun: "ponia", hint: "Four dots on a slate. Say pon." },
+    { hi: "पाँच", en: "five", sat: "ᱢᱚᱬᱮ", satRo: "môṇe", ho: "pane", mun: "pane", hint: "Full open hand. Say môṇe." },
+    { hi: "छह", en: "six", sat: "ᱛᱩᱨᱩᱭ", satRo: "turui", ho: "turui", mun: "turui", hint: "Five plus one." },
+    { hi: "सात", en: "seven", sat: "ᱮᱭᱟᱭ", satRo: "eyay", ho: "eyai", mun: "eyai", hint: "After six." },
+    { hi: "आठ", en: "eight", sat: "ᱤᱨᱟᱹᱞ", satRo: "iral", ho: "iral", mun: "iral", hint: "Two hands minus two." },
+    { hi: "नौ", en: "nine", sat: "ᱟᱨᱮ", satRo: "are", ho: "are", mun: "are", hint: "One before ten." },
+    { hi: "दस", en: "ten", sat: "ᱜᱮᱞ", satRo: "gel", ho: "gel", mun: "gel", hint: "Two full hands." },
+    { hi: "आम", en: "mango", sat: "ᱟᱢ", satRo: "ul / uli", ho: "uli", mun: "yoe", hint: "Picture a yellow mango. Home word first, Hindi second." },
+    { hi: "पानी", en: "water", sat: "ᱫᱟᱜ", satRo: "dag / dah", ho: "dah", mun: "diyang", hint: "Pour a little water and say the home word as it falls." },
+    { hi: "नमस्ते", en: "hello", sat: "ᱡᱚᱦᱟᱨ", satRo: "johar", ho: "Johar", mun: "Johar", hint: "Hands together, smile, say Johar. Same greeting works in Ho and Mundari." },
+    { hi: "नमस्कार", en: "namaskar", sat: "ᱡᱚᱦᱟᱨ", satRo: "johar", ho: "Johar", mun: "Johar", hint: "Same as hello — Johar." },
+    { hi: "धन्यवाद", en: "thank you", sat: "ᱥᱟᱫᱷᱩ ᱵᱟᱫᱽ", satRo: "sadu bad", ho: "Sadu", mun: "Sadu", hint: "Say it after a classmate helps you." },
+    { hi: "स्कूल", en: "school", sat: "ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ", satRo: "orağ senog", ho: "iskul", mun: "iskul", hint: "The place you walk to every morning." }
+  ],
+  tutorLangName() {
+    const code = this.targetLang || "sat";
+    return (this.TARGET_LANG_META[code] || this.TARGET_LANG_META.sat).name.split(" ")[0];
+  },
+  tutorLookup(q) {
+    const n = this.normalize(q);
+    const tokens = n.split(" ").filter(w => w.length > 1);
+    const stop = new Set(["what","is","the","how","do","i","say","in","a","an","of","to","for","my","me","please","tell","mean","means","meaning","called","word","this","that","and","or","with","into","from","hello","hi","please","kya","hai","hain","ho","ka","ke","ki","ko","se","mein","mai","main","yeh","ye","woh","kaise","kese","bolo","bolna","matlab","arth","samjhao","samjha","mujhe","mujh","koi","nahi","nahin","please","santhali","santali","ho","mundari","hindi","english","ol","chiki","roman"]);
+    let best = null, score = 0;
+    this.TUTOR_LEXICON.forEach(row => {
+      const keys = [row.hi, row.en, row.sat, row.satRo, row.ho, row.mun]
+        .join(" ").toLowerCase().replace(/\s*\/\s*/g, " ");
+      let s = 0;
+      if (n.includes(this.normalize(row.hi)) || n.includes(this.normalize(row.en))) s += 5;
+      if (n.includes(this.normalize(row.satRo.split("/")[0].trim()))) s += 5;
+      tokens.forEach(tok => {
+        if (stop.has(tok)) return;
+        if (keys.includes(tok)) s += tok.length > 3 ? 3 : 2;
+      });
+      if (s > score) { score = s; best = row; }
+    });
+    return score >= 2 ? best : null;
+  },
+  tutorFormatWord(row) {
+    const lang = this.targetLang || "sat";
+    const home = lang === "ho" ? row.ho : lang === "mun" ? row.mun : row.sat;
+    const roman = lang === "ho" ? row.ho : lang === "mun" ? row.mun : row.satRo;
+    const L = this.tutorLangName();
+    const openers = [
+      `Okay, straight answer — no circling around it.`,
+      `Here, this one is actually simple.`,
+      `Got it. Let's name the thing properly.`,
+      `Alright. I'll give you the word, then how to make it stick.`
+    ];
+    const opener = openers[row.hi.length % openers.length];
+    return (
+`${opener}
+
+${row.hi} in Hindi is just "${row.en}" in English. In ${L} you say ${home} — out loud that's "${roman}". Ho says ${row.ho}, Mundari says ${row.mun}. Same idea, slightly different mouth.
+
+${row.hint}
+
+Don't make a list. Look at something real (or the picture), say the ${L} word once, then the Hindi. If it feels awkward, good — that means your mouth is learning it, not just your eyes.
+
+Want the next one? Throw me another word.`
+    );
+  },
+  hasAny(p, keys) { return keys.some(k => p.includes(k)); },
+  tutorCompose(raw) {
+    const n = this.normalize(raw);
+    const L = this.tutorLangName();
+    const lang = this.targetLang || "sat";
+    const found = this.tutorLookup(raw);
+
+    const wantsTranslate = this.hasAny(n, ["say","meaning","matlab","arth","translate","in santhali","in ho","in mundari","क्या होता","क्या कहत","कैसे बोल"," मतलब","अर्थ","santhali","santali","mundari"]);
+    const wantsCount = this.hasAny(n, ["count","counting","number","numbers","1 to 5","1-5","गिनत","संख्या","एक दो तीन"]);
+    const wantsApp = this.hasAny(n, ["flashcard","chart","quiz","worksheet","translate","step","app","use this","kaise use","कैसे इस्तेमाल","फ्लैश"]);
+    const feelsShy = this.hasAny(n, ["shy","nervous","scared","afraid","shame","शर्मा","हिचक","डर","darta","sharma"]);
+    const feelsHard = this.hasAny(n, ["hard","difficult","confus","tough","mushkil","kathin","मुश्किल","कठिन","समझ नहीं","samajh nahi"]);
+    const feelsForgot = this.hasAny(n, ["forgot","forget","remember","yaad","भूल","याद"]);
+    const wantsPron = this.hasAny(n, ["pronoun","pronounce","bol nahi","उच्चारण","sahi bol","sound","listen"]);
+    const wantsQuiz = this.hasAny(n, ["quiz","test","exam","marks","score","wrong","गलत","परीक्षा","अंक"]);
+    const wantsSlow = this.hasAny(n, ["slow","late","time nahi","धीरे","समय नहीं"]);
+    const wantsHello = this.hasAny(n, ["hello","namaste","namaskar","johar","नमस्ते","नमस्कार"]);
+    const wantsWho = this.hasAny(n, ["who are you","what can you","what is vanisetu","आप कौन","तुम कौन"]);
+
+    if (found && (wantsTranslate || wantsPron || wantsHello || raw.trim().split(/\s+/).length <= 4)) {
+      return this.tutorFormatWord(found);
+    }
+
+    if (wantsCount) {
+      return (
+`Let's count. ${L} first — Hindi can wait ten seconds.
+
+1 is mid (ᱢᱤᱫ). 2 is bar (ᱵᱟᱹᱨ). 3 is pe (ᱯᱮ). 4 is pon (ᱯᱳᱱ). 5 is môṇe (ᱢᱚᱬᱮ).
+
+Then the Hindi you already know: एक दो तीन चार पाँच.
+
+Why that order? Because the child already lives in ${L}. Hindi is the bridge, not the front door. That's the whole PALASH idea, without the poster.
+
+Grab five pebbles or five fingers. Touch one, say the ${L} word, then the Hindi. No notebook. If you want sound, open the Visual Chart and tap the cards.
+
+Your turn — pick a number and ask me just that one if it still feels fuzzy.`
+      );
+    }
+
+    if (wantsHello) {
+      return (
+`Hello here is Johar. In ${L} you'll see it as ᱡᱚᱦᱟᱨ. Ho and Mundari use Johar too. Hindi side is नमस्ते.
+
+It's the everyday respectful hello — teachers and kids say the same word. Small nod, don't overthink the hands.
+
+Say it once under your breath, once to the room. That's the lesson. If you want "how are you" next, ask me.`
+      );
+    }
+
+    if (feelsShy) {
+      return (
+`Yeah. That's a real feeling, not a character flaw.
+
+Don't start with the whole class. That's like learning to swim by jumping into a river in flood. Whisper the word to yourself. Then say it to one person who isn't going to grade you. Then hide inside the class chorus — you're not solo there.
+
+Nobody in this app is scoring your accent. One slightly messy try beats a perfect sentence you never say.
+
+If a particular word is the scary part, type that word. I'll give you the ${L} version so you're not walking in empty-handed.`
+      );
+    }
+
+    if (feelsForgot) {
+      return found
+        ? this.tutorFormatWord(found)
+        : (
+`Forgetting isn't a verdict. It just means the path in your head is still a dirt road.
+
+Don't reread a list. That's how you forget again by tomorrow. Open Flashcards, same card three times: picture first, then the word. Cover it, say it, uncover, check.
+
+Tell me the exact word that vanished — एक, पानी, आम, whatever — and I'll pin it down instead of giving you generic study advice.`
+        );
+    }
+
+    if (wantsQuiz) {
+      return (
+`Wrong on the quiz is data. It's not a personality review.
+
+Hit "try this question again". Same question. Then don't stare at the options like they'll confess. Spend two minutes on the Chart, say the answer out loud, *then* tap.
+
+Coming back matters more than a clean score. If you want, we can ignore the quiz entirely and drill 1 to 5 until your mouth knows it. Just say so.`
+      );
+    }
+
+    if (wantsPron) {
+      return (
+`Pronunciation lives in your ear and your mouth. The spelling is a tourist map.
+
+Go to Translate, switch output to Voice, type the word, play it three times. Speak *with* the audio, not after it. That's shadowing — cheap and it works.
+
+Phones usually can't speak Ol Chiki letters, so I say the Roman guide on purpose: mid, bar, pe, Johar. That's not a bug.
+
+Drop the word here if you want me to say exactly how it should feel.`
+      );
+    }
+
+    if (wantsApp) {
+      return (
+`Quick map, no brochure.
+
+New word → Translate, then Listen.
+Need a picture → Chart or Flashcards.
+Want to check yourself → Quiz, and yes you can retry.
+Stuck or shy → you're already in the right room.
+Need paper for class → Worksheets.
+"What should I do next?" → Student Section.
+
+Mother tongue first, Hindi second. That's the only rule that actually matters.
+
+If you tell me the snag in one sentence — "Ol Chiki I can't read", "options look the same" — I'll cut a path through that instead of listing menus.`
+      );
+    }
+
+    if (feelsHard) {
+      return (
+`When something feels too hard, it's usually too *big*, not too *impossible*.
+
+Do one number. Or one object. Three minutes. ${L} only. Hindi can sit outside. Picture in front of you. No full sentence.
+
+Then add Hindi. Then add a second word. That's the whole trick — shrink the job until it's almost boring, then grow it.
+
+Name the hard bit and I'll cut it smaller. Vague "everything is hard" is a fog I can't walk you through.`
+      );
+    }
+
+    if (wantsSlow) {
+      return (
+`There's no race here except the optional Kids Zone timer, and that one is a game.
+
+Two or three words said out loud is a good day. A forty-minute cram you forget tomorrow is a bad one that *looks* productive.
+
+Keep the streak with one quiz tap if you want the fire icon. That's optional theatre. The real work is the words.`
+      );
+    }
+
+    if (wantsWho) {
+      return (
+`I'm Vani — the one in this app who actually talks back.
+
+I help Hindi-medium teachers and kids in Jharkhand move between Hindi and ${L} (Ho and Mundari too). Class 1–3, numbers, objects, greetings. Home language is the door. Hindi is the bridge. That's PALASH without the slogan.
+
+I'm not magic and I won't invent a word I don't have. Ask me a word, a feeling, or "what do I do next" and I'll answer that — not a paragraph that could fit on a government banner.`
+      );
+    }
+
+    const mappedRes = this.mapLang(lang, raw);
+    const mapped = typeof mappedRes === "string" ? mappedRes : mappedRes.text;
+    const mappedLooksReal = mapped && !mapped.startsWith("—") && !mapped.startsWith("(" + lang.toUpperCase() + ")");
+
+    if (mappedLooksReal && raw.length < 80) {
+      return (
+`Okay, I can work with that.
+
+You said: ${raw}
+Best ${L} match I've got: ${mapped}
+
+If that's not what you meant, shrink the question. "What is पानी in ${L}?" or "How do I say thank you?" beats a long sentence I have to guess at. I like guessing less than I like being useful.`
+      );
+    }
+
+    return (
+`I heard “${raw}”. I'm not going to pretend that was crystal clear and then hand you a speech.
+
+I get sharp when the question is small:
+• a word — “What is पानी in ${L}?”
+• a skill — “Teach me 1 to 5”
+• a feeling — shy, blanked, too hard, quiz went sideways
+• the app — “How do flashcards work?”
+
+Pick one of those, or just throw the word at me. I'll talk like a person at your desk, not like a help page.`
+    );
+  },
+  runStudentAssist() {
+    const box = document.getElementById("studentIn");
+    const raw = (box && box.value || "").trim();
+    if (!raw) {
+      this.toast(t("s8_out_empty"));
+      return;
+    }
+
+    this.appendDoubtMsg("user", raw);
+    const thinking = this.appendDoubtMsg("bot", "Okay, let me look at that…", true);
+    const reply = this.tutorCompose(raw);
+
+    const finish = () => {
+      if (thinking && thinking.parentNode) thinking.parentNode.removeChild(thinking);
+      const botEl = this.appendDoubtMsg("bot", reply);
+      // follow-up chips
+      if (botEl) {
+        const sug = document.createElement("div");
+        sug.className = "doubt-suggest";
+        ["What is पानी in Santhali?", "Teach me counting 1 to 5", "I feel shy to speak", "How do flashcards work?"].forEach(s => {
+          const b = document.createElement("button");
+          b.textContent = s;
+          b.onclick = () => { document.getElementById("studentIn").value = s; this.runStudentAssist(); };
+          sug.appendChild(b);
+        });
+        botEl.appendChild(sug);
+      }
+      this.lastDoubtReply = reply.replace(/^[^\w\u0900-\u097F]+/, "");
+      this.doubtHistory.push({ q: raw, a: reply });
+      this.prog.d.doubts = (this.prog.d.doubts || 0) + 1;
+      this.prog.save();
+      const hidden = document.getElementById("studentOut");
+      if (hidden) hidden.textContent = reply;
+      if (box) box.value = "";
+    };
+    // Tiny pause so it feels like a tutor thinking, not a template dump
+    setTimeout(finish, 280);
+  },
+
+  /* ---- KIDS ZONE (step 9) — online-only, one timed session per day ---- */
+  kz: { timer: null, secondsLeft: 300, flipped: [], matched: 0, moves: 0, cards: [], locked1: null },
+  kzToday() { return new Date().toDateString(); },
+  kzPlayedToday() {
+    return localStorage.getItem("vs_kz_last_play") === this.kzToday();
+  },
+  renderKidsZone() {
+    const area = document.getElementById("kzArea");
+    if (!area) return;
+    if (!navigator.onLine) {
+      area.innerHTML = `<div class="kz-locked">📡<br><br>${t("s9_offline_msg")}</div>`;
+      return;
+    }
+    if (this.kzPlayedToday()) {
+      area.innerHTML = `<div class="kz-locked">🔒<br><br>${t("s9_daily_limit_msg")}</div>`;
+      return;
+    }
+    this.kzStart(area);
+  },
+  kzStart(area) {
+    clearInterval(this.kz.timer);
+    this.kz.secondsLeft = 300;
+    this.kz.flipped = [];
+    this.kz.matched = 0;
+    this.kz.moves = 0;
+    this.kz.locked1 = null;
+
+    const pairs = CHART.slice(0, 6);
+    let deck = [];
+    pairs.forEach((c, i) => {
+      deck.push({ id: i, face: c.v, key: i });
+      deck.push({ id: i + "b", face: c.sat, key: i });
+    });
+    deck = deck.sort(() => Math.random() - 0.5);
+    this.kz.cards = deck;
+
+    area.innerHTML = `
+      <div class="kz-timer"><span>⏱️ <span id="kzTime">5:00</span></span><span id="kzMoves">${t("s9_moves")}: 0</span></div>
+      <div class="kz-grid" id="kzGrid"></div>
+      <div class="kz-stats"><span id="kzPairs">${t("s9_pairs")}: 0 / ${pairs.length}</span></div>
+    `;
+    const grid = document.getElementById("kzGrid");
+    deck.forEach((card, idx) => {
+      const el = document.createElement("div");
+      el.className = "kz-card";
+      el.dataset.idx = idx;
+      el.textContent = "❓";
+      el.onclick = () => this.kzFlip(idx);
+      grid.appendChild(el);
+    });
+
+    this.kz.timer = setInterval(() => {
+      this.kz.secondsLeft--;
+      const m = Math.floor(this.kz.secondsLeft / 60), s = this.kz.secondsLeft % 60;
+      const timeEl = document.getElementById("kzTime");
+      if (timeEl) timeEl.textContent = `${m}:${s.toString().padStart(2,"0")}`;
+      if (this.kz.secondsLeft <= 0) this.kzEndSession(true);
+    }, 1000);
+  },
+  kzFlip(idx) {
+    if (this.kz.locked1 !== null) return;
+    const els = document.querySelectorAll("#kzGrid .kz-card");
+    const el = els[idx];
+    if (!el || el.classList.contains("matched") || el.classList.contains("flipped")) return;
+    el.classList.add("flipped");
+    el.textContent = this.kz.cards[idx].face;
+
+    if (this.kz.flipped.length === 0) {
+      this.kz.flipped = [idx];
+    } else {
+      this.kz.locked1 = idx;
+      const firstIdx = this.kz.flipped[0];
+      this.kz.moves++;
+      document.getElementById("kzMoves").textContent = `${t("s9_moves")}: ${this.kz.moves}`;
+      const a = this.kz.cards[firstIdx], b = this.kz.cards[idx];
+      if (a.key === b.key && firstIdx !== idx) {
+        els[firstIdx].classList.add("matched");
+        els[idx].classList.add("matched");
+        this.kz.matched++;
+        document.getElementById("kzPairs").textContent = `${t("s9_pairs")}: ${this.kz.matched} / ${this.kz.cards.length/2}`;
+        this.kz.flipped = []; this.kz.locked1 = null;
+        if (this.kz.matched === this.kz.cards.length / 2) this.kzEndSession(false, true);
+      } else {
+        setTimeout(() => {
+          els[firstIdx].classList.remove("flipped"); els[firstIdx].textContent = "❓";
+          els[idx].classList.remove("flipped"); els[idx].textContent = "❓";
+          this.kz.flipped = []; this.kz.locked1 = null;
+        }, 700);
+      }
+    }
+  },
+  kzEndSession(timedOut, won) {
+    clearInterval(this.kz.timer);
+    localStorage.setItem("vs_kz_last_play", this.kzToday());
+    this.toast(won ? t("s9_toast_won") : t("s9_toast_timeup"));
+    setTimeout(() => { this.go(1); }, 1600);
+  },
+
+  /* ---- PDF ---- */
+  pdfLang: "en",
+  bindPDF() {
+    document.querySelectorAll(".pdf-lang-btn").forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll(".pdf-lang-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        this.pdfLang = b.dataset.lang;
+      };
+    });
+    document.getElementById("btnSheet").onclick = () => this.pdfSheet();
+    document.getElementById("btnLesson").onclick = () => this.pdfLesson();
+    document.getElementById("btnReport").onclick = () => this.pdfReport();
+    document.getElementById("btnReset").onclick = () => {
+      if (confirm(t("confirm_reset"))) {
+        localStorage.removeItem("vs_elite");
+        this.prog = new Progress();
+        this.updateStats();
+        this.toast(t("toast_progress_reset"));
+      }
+    };
+  },
+  pdfSheet() {
+    if (!window.jspdf) { this.toast(t("toast_pdf_loading")); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const lang = this.pdfLang || "en";
+    const titles = {
+      en: "VaniSetu.ai — Matching Worksheet",
+      hi: "VaniSetu.ai — मिलान वर्कशीट",
+      sat: "VaniSetu.ai — Matching Worksheet (Santhali)",
+      ho: "VaniSetu.ai — Matching Worksheet (Ho)",
+      mun: "VaniSetu.ai — Matching Worksheet (Mundari)"
+    };
+    const headers = {
+      en: "Match Hindi with Santhali / Ho / Mundari",
+      hi: "हिंदी को संथाली / हो / मुंडारी से मिलाएँ",
+      sat: "Match Hindi with Santhali (Ol Chiki / Roman)",
+      ho: "Match Hindi with Ho",
+      mun: "Match Hindi with Mundari"
+    };
+    doc.setFontSize(16); doc.text(titles[lang] || titles.en, 14, 18);
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString()}  Name: __________  Class: ____`, 14, 26);
+    doc.line(14, 29, 196, 29);
+    doc.setFontSize(12); doc.text(headers[lang] || headers.en, 14, 40);
+    const rows = ["1. एक  →  ____  (mid / ᱢᱤᱫ)","2. दो   →  ____  (bar / ᱵᱟᱹᱨ)","3. तीन →  ____  (pe / ᱯᱮ)","4. चार →  ____  (pon / ᱯᱳᱱ)","5. पाँच→  ____  (môṇe / ᱢᱚᱬᱮ)"];
+    let y = 52; rows.forEach(r => { doc.text(r, 20, y); y += 12; });
+    doc.text("Draw & label: आम = ul / ᱟᱢ", 14, y+10);
+    doc.rect(20, y+16, 60, 40);
+    doc.setFontSize(9); doc.text("VaniSetu.ai · SIH 2026 · PALASH MTB-MLE support", 14, 285);
+    doc.save("VaniSetu_Worksheet.pdf");
+    this.toast(t("toast_worksheet_dl"));
+  },
+  pdfLesson() {
+    if (!window.jspdf) { this.toast(t("toast_pdf_loading")); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const lang = this.pdfLang || "en";
+    const titles = {
+      en: "VaniSetu.ai — Daily Mother-Tongue Lesson Plan",
+      hi: "VaniSetu.ai — दैनिक मातृभाषा पाठ योजना",
+      sat: "VaniSetu.ai — Daily Mother-Tongue Lesson Plan",
+      ho: "VaniSetu.ai — Daily Mother-Tongue Lesson Plan (Ho)",
+      mun: "VaniSetu.ai — Daily Mother-Tongue Lesson Plan (Mundari)"
+    };
+    const linesMap = {
+      en: [
+        "Objective: Count 1–5 in Santhali then Hindi.",
+        "", "1. Warm-up (2 min) — Johar circle",
+        "2. Mother-tongue input (5 min) — pebbles: mid bar pe pon môṇe",
+        "3. Bridge to Hindi (4 min) — same objects",
+        "4. Practice (6 min) — flashcards / app quiz",
+        "5. Exit ticket (2 min) — show 3 fingers, say pe / तीन",
+        "", "Materials: pebbles, VaniSetu.ai (offline)",
+        "Assessment: observation + exit ticket"
+      ],
+      hi: [
+        "उद्देश्य: संथाली फिर हिंदी में 1–5 गिनना।",
+        "", "1. वार्म-अप (2 मिनट) — जोहार सर्कल",
+        "2. मातृभाषा इनपुट (5 मिनट) — कंकड़: mid bar pe pon môṇe",
+        "3. हिंदी ब्रिज (4 मिनट) — वही वस्तुएँ",
+        "4. अभ्यास (6 मिनट) — फ्लैशकार्ड / ऐप क्विज़",
+        "5. एग्जिट टिकट (2 मिनट) — 3 उंगलियाँ दिखाएँ, pe / तीन कहें",
+        "", "सामग्री: कंकड़, VaniSetu.ai (ऑफ़लाइन)",
+        "मूल्यांकन: अवलोकन + एग्जिट टिकट"
+      ],
+      sat: [
+        "Objective: Count 1–5 in Santhali then Hindi.",
+        "", "1. Warm-up (2 min) — Johar circle",
+        "2. Mother-tongue input (5 min) — pebbles: mid bar pe pon môṇe",
+        "3. Bridge to Hindi (4 min) — same objects",
+        "4. Practice (6 min) — flashcards / app quiz",
+        "5. Exit ticket (2 min) — show 3 fingers, say pe / तीन"
+      ],
+      ho: [
+        "Objective: Count 1–5 in Ho then Hindi.",
+        "", "1. Warm-up — Johar",
+        "2. Mother-tongue: mi baria apia ponia pane",
+        "3. Bridge to Hindi",
+        "4. Practice with flashcards"
+      ],
+      mun: [
+        "Objective: Count 1–5 in Mundari then Hindi.",
+        "", "1. Warm-up — Johar",
+        "2. Mother-tongue: miḍ baria apia ponia pane",
+        "3. Bridge to Hindi",
+        "4. Practice with flashcards"
+      ]
+    };
+    doc.setFontSize(15); doc.text(titles[lang] || titles.en, 14, 18);
+    doc.setFontSize(10); doc.text(`Date: ${new Date().toLocaleDateString()} | Class 1-3 | Focus: Numbers 1-5`, 14, 26);
+    const lines = linesMap[lang] || linesMap.en;
+    let y = 40; lines.forEach(l => { doc.text(l, 14, y); y += 8; });
+    doc.save("VaniSetu_LessonPlan.pdf");
+    this.toast(t("toast_lesson_dl"));
+  },
+  pdfReport() {
+    if (!window.jspdf) { this.toast(t("toast_pdf_loading")); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const p = this.prog;
+    doc.setFontSize(16); doc.text("VaniSetu.ai — Progress Report", 14, 18);
+    doc.setFontSize(11);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+    doc.text(`Level: ${p.level()}`, 14, 36);
+    doc.text(`Attempts: ${p.d.attempts}  |  Accuracy: ${p.acc()}%`, 14, 46);
+    doc.text(`Streak: ${p.d.streak}  |  Flashcards: ${p.d.flash}  |  Translations: ${p.d.trans}`, 14, 54);
+    doc.setFontSize(9); doc.text("VaniSetu.ai · SIH 2026 · Govt of Jharkhand", 14, 285);
+    doc.save("VaniSetu_Report.pdf");
+    this.toast(t("toast_report_dl"));
+  },
+
+  /* ---- STUDENT SECTION: AI PROGRESS DETECTOR (step 10) ---- */
+  bindProgressDetector() {
+    const btn = document.getElementById("btnProgressDetect");
+    if (btn) btn.onclick = () => this.runProgressDetector();
+  },
+  runProgressDetector() {
+    const p = this.prog.d;
+    const acc = this.prog.acc();
+    const lines = [];
+    lines.push(`📊 Attempts: ${p.attempts}  ·  Accuracy: ${acc}%  ·  Streak: ${p.streak} day(s)`);
+    lines.push(`Flashcards viewed: ${p.flash}  ·  Translations tried: ${p.trans}  ·  Doubts asked: ${p.doubts || 0}`);
+    lines.push("");
+
+    if (p.attempts === 0) {
+      lines.push("🆕 You haven't attempted the Daily Quiz yet. Start with Step 4 to build your first score.");
+    } else if (acc < 40) {
+      lines.push("⚠️ Your accuracy is low right now. Suggested plan: revisit Step 2 (Visual Chart) and Step 3 (Flashcards) for 5 minutes, then retry today's quiz using Try Again.");
+    } else if (acc < 75) {
+      lines.push("🙂 You're improving steadily. Suggested plan: go through 5 more flashcards, then retake the quiz to push accuracy higher.");
+    } else {
+      lines.push("🌟 Excellent accuracy! Suggested plan: keep your streak going and try helping a classmate — teaching is the best practice.");
+    }
+
+    if (p.streak === 0) lines.push("🔥 No active streak yet — come back tomorrow and attempt one quiz to start one.");
+    else if (p.streak < 3) lines.push(`🔥 ${p.streak}-day streak building — attempt today's quiz to keep it alive.`);
+    else lines.push(`🔥 Strong ${p.streak}-day streak — don't break the chain, attempt today's quiz.`);
+
+    if (p.trans < 3) lines.push("🗣️ Try the Translate step a few more times with different sentences — it builds vocabulary fast.");
+    if ((p.doubts || 0) === 0) lines.push("🧑‍🎓 Haven't used the Doubt Solver yet? It's judgement-free — use it anytime something feels unclear.");
+
+    document.getElementById("progressOut").textContent = lines.join("\n");
+    this.toast("Progress analysed");
+  },
+
+  /* ---- STUDENT SECTION: UPLOAD PDF & CONVERT TO MOTHER TONGUE (step 10) ---- */
+  pdfExtractedText: "",
+  pdfConvertedText: "",
+  bindPdfUpload() {
+    const fileInput = document.getElementById("pdfUpload");
+    const statusEl = document.getElementById("pdfStatus");
+    if (!fileInput) return;
+    fileInput.onchange = () => {
+      const f = fileInput.files[0];
+      statusEl.textContent = f ? `Selected: ${f.name}` : t("s10_pdf_ready");
+      document.getElementById("btnPdfDownload").disabled = true;
+      this.pdfConvertedText = "";
+    };
+    document.getElementById("btnPdfConvert").onclick = () => this.convertPdf();
+    document.getElementById("btnPdfDownload").onclick = () => this.downloadConvertedPdf();
+  },
+  async convertPdf() {
+    const fileInput = document.getElementById("pdfUpload");
+    const statusEl = document.getElementById("pdfStatus");
+    const out = document.getElementById("pdfOut");
+    const f = fileInput.files[0];
+    if (!f) { this.toast("Choose a PDF file first"); return; }
+    if (!window.pdfjsLib) { statusEl.textContent = "PDF engine still loading — try again in a moment."; return; }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    statusEl.textContent = "Reading PDF…";
+    try {
+      const buf = await f.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        fullText += content.items.map(it => it.str).join(" ") + "\n";
+      }
+      this.pdfExtractedText = fullText.trim();
+      if (!this.pdfExtractedText) {
+        statusEl.textContent = "Couldn't find readable text (this may be a scanned/image PDF).";
+        out.textContent = "No extractable text found. Try a text-based PDF (not a photo/scan).";
+        return;
+      }
+      statusEl.textContent = `Extracted ${this.pdfExtractedText.split(/\s+/).length} words from ${pdf.numPages} page(s). Converting…`;
+
+      const lang = this.targetLang || "sat";
+      const rawLines = this.pdfExtractedText.split(/\n+/).filter(l => l.trim());
+      const converted = rawLines.map(line => this.mapLangText(lang, line.trim())).join("\n");
+      this.pdfConvertedText = converted;
+      const meta = this.TARGET_LANG_META[lang] || this.TARGET_LANG_META.sat;
+      out.textContent = `— Converted to ${meta.name} (known classroom words shown in mother tongue; unmatched text is marked) —\n\n${converted}`;
+      statusEl.textContent = "Done. You can download the converted PDF below.";
+      document.getElementById("btnPdfDownload").disabled = false;
+      this.toast("PDF converted");
+    } catch (err) {
+      statusEl.textContent = "Couldn't read this PDF. Try another file.";
+      out.textContent = t("s10_pdf_default");
+    }
+  },
+  downloadConvertedPdf() {
+    if (!this.pdfConvertedText) { this.toast("Convert a PDF first"); return; }
+    if (!window.jspdf) { this.toast(t("toast_pdf_loading")); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const lang = this.targetLang || "sat";
+    const meta = this.TARGET_LANG_META[lang] || this.TARGET_LANG_META.sat;
+    doc.setFontSize(14); doc.text(`VaniSetu.ai — Converted to ${meta.name}`, 14, 16);
+    doc.setFontSize(10);
+    const wrapped = doc.splitTextToSize(this.pdfConvertedText, 180);
+    doc.text(wrapped, 14, 28);
+    doc.setFontSize(8); doc.text("VaniSetu.ai · SIH 2026 · Offline dictionary-based conversion (demo)", 14, 290);
+    doc.save("VaniSetu_Converted.pdf");
+    this.toast("Converted PDF downloaded");
+  },
+
+  /* ---- STORIES (Step 11) ---- */
+  currentStory: "mango",
+  storyShowHi: false,
+  STORIES: {
+    mango: {
+      title: "The Mango",
+      sat: "ᱛᱮᱦᱮᱧ ᱢᱤᱫ ᱜᱤᱫᱽᱨᱟᱹ ᱟᱹᛤ ᱨᱮ ᱟᱢ ᱧᱮᱞ ᱠᱮᱫᱟ᱾\nᱩᱱᱤ ᱟᱢ ᱡᱚᱢ ᱠᱮᱫᱟ᱾\nᱟᱢ ᱟᱹᱰᱤ ᱵᱮᱥ ᱛᱟᱦᱮᱸ ᱠᱟᱱᱟ᱾\nᱜᱤᱫᱽᱨᱟᱹ ᱨᱟᱹᱥᱠᱟᱹ ᱮᱱᱟ᱾",
+      ho: "Teheñ miḍ hon ora re uli ñel keda.\nUni uli jom keda.\nUli adi bes taikenā.\nHon raska ena.",
+      mun: "Tiñ miḍ hon ora re yoe ñel keda.\nUni yoe jom keda.\nYoe adi bes taikenā.\nHon raska ena.",
+      hi: "आज एक बच्चा ने घर में आम देखा।\nउसने आम खाया।\nआम बहुत अच्छा था।\nबच्चा खुश हो गया।",
+      en: "Today a child saw a mango at home.\nHe ate the mango.\nThe mango was very good.\nThe child became happy.",
+      q: { text: "What did the child eat?", opts: ["Mango / आम / ᱟᱢ", "Water", "Rice", "Book"], c: 0 }
+    },
+    water: {
+      title: "Water is Life",
+      sat: "ᱫᱟᱜ ᱡᱤᱵᱚᱱ ᱠᱟᱱᱟ᱾\nᱟᱵᱚ ᱫᱟᱜ ᱧᱩᱭᱟ᱾\nᱫᱟᱨᱮ ᱦᱚᱸ ᱫᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱠᱚ ᱞᱟᱹᜋᱟ᱾\nᱫᱟᱜ ᱵᱟᱝ ᱠᱷᱟᱱ ᱡᱤᱵᱚᱱ ᱵᱟᱝ᱾",
+      ho: "Dah jibon kana.\nAbu dah ñu'a.\nDare hõ dah lagiṛ ko laṛa.\nDah baṅ khan jibon baṅ.",
+      mun: "Diyang jibon kana.\nAbu diyang ñu'a.\nDare hõ diyang lagiṛ ko laṛa.\nDiyang baṅ khan jibon baṅ.",
+      hi: "पानी जीवन है।\nहम पानी पीते हैं।\nपेड़ भी पानी के लिए तरसते हैं।\nपानी नहीं तो जीवन नहीं।",
+      en: "Water is life.\nWe drink water.\nTrees also need water.\nNo water means no life.",
+      q: { text: "What is life according to the story?", opts: ["Water / पानी / ᱫᱟᱜ", "Mango", "School", "Book"], c: 0 }
+    },
+    school: {
+      title: "Going to School",
+      sat: "ᱥᱮᱛᱟᱜ ᱦᱩᱭᱮᱱᱟ᱾\nᱜᱤᱫᱽᱨᱟᱹ ᱚᱲᱟᱜ ᱥᱮᱱᱚᱜ ᱥᱮᱱᱚᱜ ᱠᱟᱱᱟ᱾\nᱢᱟᱪᱮᱛ ᱡᱚᱦᱟᱨ ᱠᱟᱹᱢᱤᱭᱟ᱾\nᱟᱵᱚ ᱮᱞ ᱪᱮᱫ ᱟᱵᱚᱱᱟ᱾",
+      ho: "Seta hoyena.\nHon iskul seno kana.\nGuru johar kamiya.\nAbu lekha ituna.",
+      mun: "Seta hoyena.\nHon iskul seno kana.\nGuru johar kamiya.\nAbu lekha ituna.",
+      hi: "सुबह हो गई।\nबच्चा स्कूल जा रहा है।\nशिक्षक जोहार करते हैं।\nहम गिनती सीखेंगे।",
+      en: "Morning has come.\nThe child is going to school.\nThe teacher says Johar.\nWe will learn counting.",
+      q: { text: "Where is the child going?", opts: ["School / स्कूल", "Market", "River", "Forest"], c: 0 }
+    },
+    count: {
+      title: "Counting Friends",
+      sat: "ᱢᱤᱫ ᱜᱟᱛᱮ᱾ ᱵᱟᱹᱨ ᱜᱟᱛᱮ᱾\nᱯᱮ ᱜᱟᱛᱮ᱾ ᱯᱳᱱ ᱜᱟᱛᱮ᱾\nᱢᱚᱬᱮ ᱜᱟᱛᱮ᱾\nᱟᱵᱚ ᱡᱚᱛᱚ ᱜᱟᱛᱮ ᱠᱟᱱᱟ᱾",
+      ho: "Mi saki. Baria saki.\nApia saki. Ponia saki.\nPane saki.\nAbu jota saki kana.",
+      mun: "Miḍ saki. Baria saki.\nApia saki. Ponia saki.\nPane saki.\nAbu jota saki kana.",
+      hi: "एक दोस्त। दो दोस्त।\nतीन दोस्त। चार दोस्त।\nपाँच दोस्त।\nहम सब दोस्त हैं।",
+      en: "One friend. Two friends.\nThree friends. Four friends.\nFive friends.\nWe are all friends.",
+      q: { text: "How many friends at the end?", opts: ["Five / पाँच / ᱢᱚᱬᱮ", "One", "Ten", "Three"], c: 0 }
+    }
+  },
+
+  renderStory() {
+    const key = this.currentStory || "mango";
+    const s = this.STORIES[key];
+    if (!s) return;
+    const lang = this.targetLang || "sat";
+    document.getElementById("storyTitle").textContent = s.title;
+    const body = document.getElementById("storyBody");
+    body.textContent = s[lang] || s.sat || s.en;
+    const hiEl = document.getElementById("storyHi");
+    hiEl.textContent = "Hindi:\n" + (s.hi || "");
+    hiEl.classList.toggle("hidden", !this.storyShowHi);
+
+    // quiz
+    const qBox = document.getElementById("storyQuiz");
+    const feed = document.getElementById("storyFeed");
+    qBox.innerHTML = "";
+    feed.textContent = "";
+    if (s.q) {
+      s.q.opts.forEach((opt, i) => {
+        const b = document.createElement("button");
+        b.className = "quiz-opt";
+        b.textContent = opt;
+        b.onclick = () => {
+          document.querySelectorAll("#storyQuiz .quiz-opt").forEach(x => x.disabled = true);
+          if (i === s.q.c) {
+            feed.textContent = "✅ Correct! Very good.";
+            feed.style.color = "var(--green)";
+          } else {
+            feed.textContent = "Try again — read the story once more.";
+            feed.style.color = "#fca5a5";
+            setTimeout(() => {
+              document.querySelectorAll("#storyQuiz .quiz-opt").forEach(x => x.disabled = false);
+              feed.textContent = "";
+            }, 1200);
+          }
+        };
+        qBox.appendChild(b);
+      });
+    }
+
+    // bind buttons once
+    if (!this._storyBound) {
+      this._storyBound = true;
+      document.querySelectorAll(".story-btn").forEach(b => {
+        b.onclick = () => {
+          document.querySelectorAll(".story-btn").forEach(x => x.classList.remove("active"));
+          b.classList.add("active");
+          this.currentStory = b.dataset.story;
+          this.storyShowHi = false;
+          this.renderStory();
+        };
+      });
+      document.getElementById("btnStoryLang").onclick = () => {
+        this.storyShowHi = !this.storyShowHi;
+        document.getElementById("btnStoryLang").textContent = this.storyShowHi ? "Hide Hindi" : "Show Hindi";
+        this.renderStory();
+      };
+      document.getElementById("btnStorySpeak").onclick = () => {
+        const lang = this.targetLang || "sat";
+        const s = this.STORIES[this.currentStory];
+        const txt = (s && (s[lang] || s.sat || s.en)) || "";
+        this.speak(txt.replace(/\n/g, ". "), lang);
+      };
+    }
+  },
+
+  updateStats() {
+    const levelKeyMap = { "Beginner": "level_beginner", "Learner": "level_learner", "Intermediate": "level_intermediate", "Expert": "level_expert" };
+    document.getElementById("sAttempts").textContent = this.prog.d.attempts;
+    document.getElementById("sAcc").textContent = this.prog.acc() + "%";
+    document.getElementById("sStreak").textContent = this.prog.d.streak;
+    document.getElementById("sLevel").textContent = t(levelKeyMap[this.prog.level()] || "level_beginner");
+    document.getElementById("streakPill").textContent = `🔥 ${this.prog.d.streak} ${t("streak_suffix")}`;
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Entry animation then init
+  setTimeout(() => {
+    const splash = document.getElementById("splashScreen");
+    if (splash) {
+      splash.classList.add("hide");
+      setTimeout(() => { if (splash.parentNode) splash.parentNode.removeChild(splash); }, 750);
+    }
+    app.init();
+  }, 2100);
+
+  // Basic PWA / offline caching registration (best-effort)
+  if ("serviceWorker" in navigator) {
+    // Inline minimal SW via blob so single-file still works
+    const swCode = `
+      const CACHE = "vanisetu-v1";
+      self.addEventListener("install", e => {
+        self.skipWaiting();
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(["./"]).catch(()=>{})));
+      });
+      self.addEventListener("activate", e => {
+        e.waitUntil(self.clients.claim());
+      });
+      self.addEventListener("fetch", e => {
+        e.respondWith(
+          caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match("./")))
+        );
+      });
+    `;
+    const blob = new Blob([swCode], { type: "application/javascript" });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+});
+</script>
+</body>
+</html>
